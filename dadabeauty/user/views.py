@@ -10,10 +10,11 @@ import requests
 from django.core.mail import send_mail
 from django.db import transaction
 from django.views.generic.base import View
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse,Http404
 from django.shortcuts import render
 from .models import UserProfile,WeiboUser,Interests,Interests_User,Follow,Fans
 from django.conf import settings
+import os
 from dtoken.views import make_token
 from .tasks import send_active_email
 from tools.logging_check import logging_check
@@ -236,7 +237,8 @@ def get_weibo_login_url():
 def interested(request):
     if request.method == 'GET':
         result = {'code':'10108','error':'请使用post方式提交'}
-    if request.method == 'POST':
+        return JsonResponse(result)
+    elif request.method == 'POST':
         data = request.body
         if not data:
             result = {'code': '10109', 'error': '请提供感兴趣的方面'}
@@ -245,6 +247,63 @@ def interested(request):
         intesters_all = json_obj.get('interests') #'1,2,5'
         uid = json_obj.get('uid')
         interests_list = intesters_all.split(',') #['1','2','5']
-        user = UserProfile.objects.filter(id=uid)
+        user_interests_list = []
         for i in range(len(interests_list)):
-            interest = Interests_User.objects.create(uid=user,iid=interests_list[i])
+            interest = Interests_User.objects.create(uid=uid,iid=interests_list[i])
+            user_interests_list.append(Interests.object.filter(id=i).field)
+        # 向前端返回数据 例子{'code':200,'data':{'id':1,'user_interests_list':'小清新风','欧美妆容'}}
+        result = {'code':200,'data':{'id':uid,'user_interests_list':user_interests_list}}
+
+# 设置头像与个性签名
+def further_info(request):
+    if request.method == 'GET':
+        result = {'code':'10110','error':'请使用post方式提交'}
+        return JsonResponse(result)
+    elif request.method == 'POST':
+        try:
+            a_profile = request.FILES['myfile']
+            filename =os.path.join(settings.MEDIA_ROOT,a_profile.name)
+            with open(filename, 'wb') as f:
+                data = a_profile.file.read()
+                f.write(data)
+        except Exception as e:
+            raise Http404
+        data = request.body
+        json_obj = json.loads(data)
+        uid = json_obj.get('uid')
+        description = json_obj.get('description')
+        if not data:
+            return JsonResponse({'code':10111,'error':"请上传头像和个性签名"})
+        else:
+            # 1.查
+            user = UserProfile.objects.filter(id=uid)
+            if not user:
+                return JsonResponse({'code':10112,'error':'not found the user'})
+            user=user[0]
+            # 2.改
+            user.profile_image_url = '/static/upload_profile/%s'%a_profile.name
+            user.description = description
+            user.save()
+            #3.更新
+            profile_image_url = '/static/upload_profile/%s' % a_profile.name
+            result = {'uid':uid,'profile_image_url':profile_image_url,'description':description}
+            return JsonResponse({'code':200,'data':result})
+
+
+
+
+# 用户被关注
+class Fan(View):
+    def get(self, request):
+        pass
+    def post(self,request):
+        pass
+
+# 用户关注别人
+class Follows(View):
+    def get(self, request):
+        pass
+    def post(self,request):
+        pass
+
+
