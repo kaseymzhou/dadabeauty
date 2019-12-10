@@ -12,12 +12,13 @@ from django.db import transaction
 from django.views.generic.base import View
 from django.http import HttpResponse, JsonResponse,Http404
 from django.shortcuts import render
-from .models import UserProfile,WeiboUser,Interests,Interests_User,Follow,Fans
+from .models import *
 from django.conf import settings
 import os
 from dtoken.views import make_token
 from .tasks import send_active_email
 from tools.logging_check import logging_check
+from django.utils.decorators import method_decorator
 
 # Create your views here.
 
@@ -234,11 +235,16 @@ def get_weibo_login_url():
     return url
 
 # 用户挑选感兴趣的部分
-def interested(request):
-    if request.method == 'GET':
-        result = {'code':'10108','error':'请使用post方式提交'}
+
+class InterestedChoiceView(View):
+    @method_decorator(logging_check,name='dispatch')
+    def dispatch(self, request, *args, **kwargs):
+        return super(InterestedChoiceView, self).dispatch(request, *args, **kwargs)
+
+    def get(self,request):
+        result = {'code':200}
         return JsonResponse(result)
-    elif request.method == 'POST':
+    def post(self,request):
         data = request.body
         if not data:
             result = {'code': '10109', 'error': '请提供感兴趣的方面'}
@@ -253,13 +259,17 @@ def interested(request):
             user_interests_list.append(Interests.object.filter(id=i).field)
         # 向前端返回数据 例子{'code':200,'data':{'id':1,'user_interests_list':'小清新风','欧美妆容'}}
         result = {'code':200,'data':{'id':uid,'user_interests_list':user_interests_list}}
+        return JsonResponse(result)
 
 # 设置头像与个性签名
-def further_info(request):
-    if request.method == 'GET':
-        result = {'code':'10110','error':'请使用post方式提交'}
-        return JsonResponse(result)
-    elif request.method == 'POST':
+
+class FurtherInfoView(View):
+    @method_decorator(logging_check)
+    def dispatch(self, request, *args, **kwargs):
+        return super(FurtherInfoView, self).dispatch(request, *args, **kwargs)
+    def get(self,request):
+        return JsonResponse({'code':200})
+    def post(self, request):
         try:
             a_profile = request.FILES['myfile']
             filename =os.path.join(settings.MEDIA_ROOT,a_profile.name)
@@ -289,22 +299,71 @@ def further_info(request):
             result = {'uid':uid,'profile_image_url':profile_image_url,'description':description}
             return JsonResponse({'code':200,'data':result})
 
-
-
-
-# 用户被关注
-class Fan(View):
+# 关注用户
+class FanView(View):
+    @method_decorator(logging_check)
+    def dispatch(self, request, *args, **kwargs):
+        return super(FanView, self).dispatch(request, *args, **kwargs)
     def get(self, request):
-        pass
+        return JsonResponse({'code':10113,'error':'请使用post方式'})
     def post(self,request):
-        pass
-
-# 用户关注别人
-class Follows(View):
-    def get(self, request):
-        pass
-    def post(self,request):
-        pass
+        data = request.body #{'followed_id':01,'fans_id':02}
+        if not data:
+            result = {'code': '10101', 'error': '关注失败'}
+            return JsonResponse(result)
+        else:
+            json_obj = json.loads(data)
+            followed_id = json_obj.get('followed_id')
+            fans_id = json_obj.get('fans_id')
+            if r.hexists('followed',followed_id) == 'False':
+                r.hset('followed',followed_id,0)
+            if r.hexists('fans',fans_id) == 'False':
+                r.hset('fans',fans_id,0)
+            followed = UserProfile.object.filter(followed_id=followed_id, fans_id=fans_id)
+            if not followed:
+                # 未关注过该用户
+                Follow.objects.create(followed_id=followed_id, fans_id=fans_id)
+                r.hincrby('followed', followed_id, 1) # 被关注用户redis粉丝数加1
+                r.hincrby('fans',fans_id,1) # 关注了他人的用户redis关注数加1
+            else:
+                if followed.isActive is False:
+                    # 曾经关注过该用户但取消了
+                    followed.isActive = True
+                    followed.save()
+                    r.hincrby('followed',followed_id,1) # 被关注用户redis粉丝数加1
+                    r.hincrby('fans', fans_id, 1)  # 关注了他人的用户redis关注数加1
+                else:
+                    return JsonResponse({'code':10114,'data':'关注失败'})
+            followed_no = r.hget('followed',followed_id)
+            fans_no = r.hget('fans',fans_id)
+            result = {'code':200,'data':{'followed_id':followed_id,'fans_id':fans_id,'followed_no':followed_no,
+                                         'fans_no':fans_no}}
+        return JsonResponse(result)
+    def delete(self,request):
+        # 取消关注
+        data = request.body  # {'followed_id':01,'fans_id':02}
+        if not data:
+            result = {'code': '10101', 'error': '取消关注失败'}
+            return JsonResponse(result)
+        json_obj = json.loads(data)
+        followed_id = json_obj.get('followed_id')
+        fans_id = json_obj.get('fans_id')
+        # 1.查
+        followed = UserProfile.object.filter(followed_id=followed_id,fans_id=fans_id)
+        if not followed:
+            return JsonResponse({'code': 10112, 'error': 'not found the user'})
+        followed = followed[0]
+        # 2.改
+        followed.isActive = False
+        followed.save()
+        r.hincrby('followed', followed_id, -1)  # 被关注用户redis粉丝数减1
+        r.hincrby('fans', fans_id, -1)  # 关注了他人的用户redis关注数减1
+        # 3.更新
+        followed_no = r.hget('followed', followed_id)
+        fans_no = r.hget('fans', fans_id)
+        result = {'code': 200, 'data': {'followed_id': followed_id, 'fans_id': fans_id, 'followed_no': followed_no,
+                                        'fans_no': fans_no}}
+        return JsonResponse(result)
 
 # 自动发送生日邮件
 class Birthday_email(View):

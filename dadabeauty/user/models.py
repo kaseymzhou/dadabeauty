@@ -16,7 +16,7 @@ class UserProfile(models.Model):
     birthday = models.DateField()
     isActive = models.BooleanField(default=False,verbose_name='是否激活')
     profile_image_url = models.URLField(verbose_name='头像',default='/static/default_pic/default_profile.jpg')
-    description = models.CharField(verbose_name='个性签名',null=True)
+    description = models.CharField(verbose_name='个性签名',null=True,max_length=100)
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
 
@@ -62,22 +62,12 @@ class Interests_User(models.Model):
         return '%s_%s' % (self.uid, self.iid)
 
 class Follow(models.Model):
-    uid = models.ForeignKey(UserProfile)
+    followed_id = models.OneToOneField(UserProfile,related_name='followed_id',default='')
+    fans_id = models.OneToOneField(UserProfile,related_name='fans_id',default='')
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
     isActive = models.BooleanField(default=True)
     class Meta:
         db_table = 'follow'
-    def __str__(self):
-        return '%s_%s'%(self.id,self.uid)
-
-
-class Fans(models.Model):
-    uid = models.ForeignKey(UserProfile)
-    created_time = models.DateTimeField(auto_now_add=True)
-    updated_time = models.DateTimeField(auto_now=True)
-    isActive = models.BooleanField(default=True)
-    class Meta:
-        db_table = 'fans'
     def __str__(self):
         return '%s_%s'%(self.id,self.uid)
