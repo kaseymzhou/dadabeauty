@@ -306,4 +306,10 @@ class Follows(View):
     def post(self,request):
         pass
 
+# 自动发送生日邮件
+class Birthday_email(View):
+    def get(self,request):
+        pass
+    def post(self,request):
+        pass
 
