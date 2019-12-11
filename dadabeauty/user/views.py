@@ -34,13 +34,13 @@ class Users(View):
             result = {'code': '10101', 'error': '请提供完整的注册信息'}
             return JsonResponse(result)
         json_obj = json.loads(data)
-        username = json_obj.get('uname')
+        username = json_obj.get('username')
         password = json_obj.get('password')
         email = json_obj.get('email')
         phone = json_obj.get('phone')
         gender = json_obj.get('gender')
         birthday = json_obj.get('birthday')
-
+        print('--------------------',username,password,email,phone,gender,birthday)
         # 检查用户名是否可用
         old_user = UserProfile.objects.filter(username=username)
         if old_user:
@@ -57,6 +57,11 @@ class Users(View):
         except Exception as e:
             result = {'code': '10103', 'error': '用户名已存在!'}
             return JsonResponse(result)
+        user = UserProfile.objects.filter(username=username)
+        user = user[0]
+        create_uid = user.id
+        r.hset('followed:amount', create_uid, 0)
+        r.hset('fans:amount', create_uid, 0)
         # 生成、签发token
         # {'code':200, 'username':'xxxx', 'data':{'token':xxxx}}
         token = make_token(username)
@@ -79,7 +84,7 @@ def send_active_mail(email, code_url):
         <p>&nbsp;&nbsp;&nbsp;&nbsp;激活地址为<a href='%s' target='blank'>点击激活</a></p>
         <p>&nbsp;&nbsp;&nbsp;&nbsp;Let's together to feel the charming world and beautify our marvelous life!</p>
         ''' % (code_url)
-    send_mail(subject, '', '411180564@qq.com', html_message=html_message, recipient_list=[email])
+    send_mail(subject, '', 'dadabeauty1908@163.com.com', html_message=html_message, recipient_list=[email])
 
 # 用户账户激活
 def users_active(request):
@@ -315,23 +320,19 @@ class FanView(View):
             json_obj = json.loads(data)
             followed_id = json_obj.get('followed_id')
             fans_id = json_obj.get('fans_id')
-            if r.hexists('followed',followed_id) == 'False':
-                r.hset('followed',followed_id,0)
-            if r.hexists('fans',fans_id) == 'False':
-                r.hset('fans',fans_id,0)
             followed = UserProfile.object.filter(followed_id=followed_id, fans_id=fans_id)
             if not followed:
                 # 未关注过该用户
                 Follow.objects.create(followed_id=followed_id, fans_id=fans_id)
-                r.hincrby('followed', followed_id, 1) # 被关注用户redis粉丝数加1
-                r.hincrby('fans',fans_id,1) # 关注了他人的用户redis关注数加1
+                r.hincrby('followed:amount', followed_id, 1) # 被关注用户redis粉丝数加1
+                r.hincrby('fans:amount',fans_id,1) # 关注了他人的用户redis关注数加1
             else:
                 if followed.isActive is False:
                     # 曾经关注过该用户但取消了
                     followed.isActive = True
                     followed.save()
-                    r.hincrby('followed',followed_id,1) # 被关注用户redis粉丝数加1
-                    r.hincrby('fans', fans_id, 1)  # 关注了他人的用户redis关注数加1
+                    r.hincrby('followed:amount',followed_id,1) # 被关注用户redis粉丝数加1
+                    r.hincrby('fans:amount', fans_id, 1)  # 关注了他人的用户redis关注数加1
                 else:
                     return JsonResponse({'code':10114,'data':'关注失败'})
             followed_no = r.hget('followed',followed_id)
@@ -356,8 +357,8 @@ class FanView(View):
         # 2.改
         followed.isActive = False
         followed.save()
-        r.hincrby('followed', followed_id, -1)  # 被关注用户redis粉丝数减1
-        r.hincrby('fans', fans_id, -1)  # 关注了他人的用户redis关注数减1
+        r.hincrby('followed:amount', followed_id, -1)  # 被关注用户redis粉丝数减1
+        r.hincrby('fans:amount', fans_id, -1)  # 关注了他人的用户redis关注数减1
         # 3.更新
         followed_no = r.hget('followed', followed_id)
         fans_no = r.hget('fans', fans_id)
