@@ -162,7 +162,7 @@ EMAIL_USE_TLS = True
 
 WEIBO_CLIENT_ID='467640713'
 WEIBO_CLIENT_SECRET='d5ba428ff942a99743e1fe10da4a199b'
-WEIBO_REDIRECT_URI='http://127.0.0.1:7000/dadashop/templates/callback.html'
+WEIBO_REDIRECT_URI='http://127.0.0.1:7001/dadabeauty/index.html'
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR,'static'),)
 
