@@ -8,7 +8,7 @@ class GoodsCatalog(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'P_goods_catalog'
+        db_table = 'pgoods_catalog'
 
     def __str__(self):
         return 'id :%s; goods_name:%s' % (self.id, self.name)
@@ -20,7 +20,7 @@ class GoodsSubclass(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'P_goosd_subclass'
+        db_table = 'pgoosd_subclass'
 
     def __str__(self):
         return 'id :%s; goosd_subclass:%s' % (self.id, self.name)
@@ -32,7 +32,7 @@ class Brand(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'P_brand'
+        db_table = 'pbrand'
 
     def __str__(self):
         return 'id :%s; brand:%s' % (self.id, self.name)
@@ -46,7 +46,7 @@ class Spu(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'P_spu'
+        db_table = 'pspu'
 
     def __str__(self):
         return 'id :%s; spu:%s' % (self.id, self.name)
@@ -57,7 +57,7 @@ class Source(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'P_source'
+        db_table = 'psource'
 
     def __str__(self):
         return 'id :%s; source:%s' % (self.id, self.name)
@@ -72,7 +72,7 @@ class Sku(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'P_sku'
+        db_table = 'psku'
 
     def __str__(self):
         return 'id :%s; sku:%s' % (self.id, self.name)
@@ -86,7 +86,7 @@ class sku_source(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'P_sku_source'
+        db_table = 'psku_source'
 
     def __str__(self):
         return 'id :%s; sku_source:%s' % (self.id, self.name)
@@ -98,7 +98,7 @@ class Sale_attr(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'P_Sale_attr'
+        db_table = 'psale_attr'
 
     def __str__(self):
         return 'id :%s; sale_attr:%s' % (self.id, self.attr_name)
@@ -111,7 +111,7 @@ class Sale_attr_val(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'P_Sale_attr_val'
+        db_table = 'psale_attr_val'
 
     def __str__(self):
         return 'id :%s; Sale_attr_val:%s' % (self.id, self.val)
@@ -123,7 +123,7 @@ class Sku_img(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'P_Sku_img'
+        db_table = 'psku_img'
 
     def __str__(self):
         return 'id :%s' % (self.id)
@@ -137,7 +137,7 @@ class Comment(models.Model):
     isActive = models.BooleanField(default=True)
 
     class Meta:
-        db_table = 'P_Comment'
+        db_table = 'pcomment'
 
     def __str__(self):
         return 'id :%s' % (self.id)
@@ -151,7 +151,7 @@ class Reply(models.Model):
     isActive = models.BooleanField(default=True)
 
     class Meta:
-        db_table = 'P_Comment'
+        db_table = 'preply'
 
     def __str__(self):
         return 'id :%s' % (self.id)
@@ -164,7 +164,7 @@ class Collect(models.Model):
     isActive = models.BooleanField(default=True)
 
     class Meta:
-        db_table = 'P_Collect'
+        db_table = 'pcollect'
 
     def __str__(self):
         return 'id :%s' % (self.id)
@@ -175,7 +175,7 @@ class Tag(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
     class Meta:
-        db_table = 'P_Tag'
+        db_table = 'ptag'
     def __str__(self):
         return 'id :%s; name:%s' % (self.id,self.name)
 

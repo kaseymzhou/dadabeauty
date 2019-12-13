@@ -22,7 +22,7 @@ class UserProfile(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'user_profile'
+        db_table = 'uuser_profile'
 
     def __str__(self):
         return 'id :%s; username:%s'%(self.id,self.username)
@@ -35,7 +35,7 @@ class WeiboUser(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
     class Meta:
-        db_table = 'weibo_user'
+        db_table = 'uweibo_user'
     def __str__(self):
         return '%s_%s'%(self.wuid,self.uid)
 
@@ -46,7 +46,7 @@ class Interests(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
     isActive = models.BooleanField(default=True)
     class Meta:
-        db_table = 'interests'
+        db_table = 'uinterests'
     def __str__(self):
         return '%s_%s'%(self.id,self.field)
 
@@ -57,7 +57,7 @@ class Interests_User(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
     isActive = models.BooleanField(default=True)
     class Meta:
-        db_table = 'interests_user'
+        db_table = 'uinterests_user'
 
     def __str__(self):
         return '%s_%s' % (self.uid, self.iid)
@@ -69,6 +69,6 @@ class Follow(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
     isActive = models.BooleanField(default=True)
     class Meta:
-        db_table = 'follow'
+        db_table = 'ufollow'
     def __str__(self):
         return '%s_%s'%(self.id,self.uid)
