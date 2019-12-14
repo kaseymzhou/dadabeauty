@@ -24,3 +24,6 @@ print(r.get('index_cache'))
 
 r.set("name","zhangsan")
 print(r.get("name"))
+
+
+a = {'A':{'a':2}}

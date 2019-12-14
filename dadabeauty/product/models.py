@@ -66,7 +66,6 @@ class Source(models.Model):
 class Sku(models.Model):
     name = models.CharField('sku名字',max_length=100)
     spu_id = models.ForeignKey(Spu)
-    source = models.ForeignKey(Source)
     default_img_url = models.ImageField('sku图片')
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
@@ -77,7 +76,7 @@ class Sku(models.Model):
     def __str__(self):
         return 'id :%s; sku:%s' % (self.id, self.name)
 
-class sku_source(models.Model):
+class Sku_source(models.Model):
     sku_id = models.ForeignKey(Sku)
     source_id = models.ForeignKey(Source)
     price = models.DecimalField('价格',max_digits=10,decimal_places=2)
@@ -178,4 +177,17 @@ class Tag(models.Model):
         db_table = 'ptag'
     def __str__(self):
         return 'id :%s; name:%s' % (self.id,self.name)
+
+class LikeProduct(models.Model):
+    uid = models.ForeignKey(UserProfile)
+    sku_id = models.ForeignKey(Sku)
+    created_time = models.DateTimeField(auto_now_add=True)
+    updated_time = models.DateTimeField(auto_now=True)
+    isActive = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'plike'
+
+    def __str__(self):
+        return 'id :%s' % (self.id)
 
