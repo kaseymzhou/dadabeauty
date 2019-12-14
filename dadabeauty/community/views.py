@@ -1,5 +1,3 @@
-from django.http import HttpResponse
-from django.shortcuts import render
 from django.http import JsonResponse
 
 # Create your views here.
@@ -11,9 +9,11 @@ from user.models import UserProfile
 
 
 @logging_check
-def send_topics(request, author_name):
+def send_topics(request):
     if request.method == 'POST':
         # 发表博客
+        # http://127.0.0.1:8000/v1/community/send_topics?authorname=xxx
+        author_name = request.GET.get(', authorname')
         author = request.myuser
         if author.username != author_name:
             result = {'code': 30101, 'error': '非本人操作!'}
@@ -40,12 +40,9 @@ def send_topics(request, author_name):
         return JsonResponse(result)
 
     if request.method == 'GET':
-        # 获取 用户文章数据
-        # /v1/topics/guoxiaonao - guoxiaonao的所有文章
-        # /v1/topics/guoxiaonao?category=tec|no-tec 查看具体种类
-        # /v1/topics/guoxiaonao?t_id=33 查看具体文章
-        # 1, 访问当前博客的访问者  visitor
-        # 2, 当前被访问的博客的博主 author
+        # 获得当前发送博客的界面
+        # http://127.0.0.1:8000/v1/community/send_topics?authorname=xxx
+        author_name = request.GET.get(', authorname')
         authors = UserProfile.objects.filter(username=author_name)
         if not authors:
             result = {'code': 30105, 'error': 'The author is not existed !'}
@@ -59,8 +56,9 @@ def send_topics(request, author_name):
 @logging_check
 def index(request):
     # http://127.0.0.1:8000/v1/community/index  访问所有博客
-    # http://127.0.0.1:8000/v1/community/index?tag  访问tag标签博客
+    # http://127.0.0.1:8000/v1/community/index?tag=xxx  访问tag标签博客
     if request.method == 'GET':
+        user_me = request.myuser
         tag = request.GET.get('tag')
         if not tag:
             blog_list = Blog.objects.order_by('create_time')
@@ -74,14 +72,15 @@ def index(request):
                     forward_count = item['forward_count']
                     collect_count = item['collect_count']
                     comment_count = item['comment_count']
-                    data = {'username ': username,
-                            'title ': title,
-                            'tag_name ': tag_name,
-                            'content ': content,
-                            'like_count ': like_count,
-                            'forward_count ': forward_count,
-                            'collect_count ': collect_count,
-                            'comment_count ': comment_count
+                    data = {'user_me': user_me,
+                            'username': username,
+                            'title': title,
+                            'tag_name': tag_name,
+                            'content': content,
+                            'like_count': like_count,
+                            'forward_count': forward_count,
+                            'collect_count': collect_count,
+                            'comment_count': comment_count
                             }
                     result = {'code': 200, 'data': data}
                     return JsonResponse(result)
@@ -103,20 +102,105 @@ def index(request):
                         forward_count = item['forward_count']
                         collect_count = item['collect_count']
                         comment_count = item['comment_count']
-                        data = {'username ': username,
-                                'title ': title,
-                                'tag_name ': tag_name,
-                                'content ': content,
-                                'like_count ': like_count,
-                                'forward_count ': forward_count,
-                                'collect_count ': collect_count,
-                                'comment_count ': comment_count
+                        data = {'user_me': user_me,
+                                'username': username,
+                                'title': title,
+                                'tag_name': tag_name,
+                                'content': content,
+                                'like_count': like_count,
+                                'forward_count': forward_count,
+                                'collect_count': collect_count,
+                                'comment_count': comment_count
                                 }
                         result = {'code': 200, 'data': data}
                         return JsonResponse(result)
         if request.method == 'post':
             result = {'code': 30107, 'error': '请使用GET请求!'}
+            return JsonResponse(result)
+
+
+@logging_check
+def my_index(request):
+    # http://127.0.0.1:8000/v1/community/index?authorname=xxx  访问特定人的博客主页
+    if request.method == 'GET':
+        authorname = request.GET.get('authorname')
+        author = UserProfile.objects.get(username=authorname)
+        user_me = request.myuser
+        blog_list = author.blog_set.order_by('create_time')
+        for item in blog_list:
+            if item['is_active'] == True:
+                username = item.userprofile.username
+                title = item['title']
+                tag_name = item.tag.tag_name
+                content = item['content']
+                like_count = item['like_count']
+                forward_count = item['forward_count']
+                collect_count = item['collect_count']
+                comment_count = item['comment_count']
+                data = {'user_me': user_me,
+                        'username': username,
+                        'title': title,
+                        'tag_name': tag_name,
+                        'content': content,
+                        'like_count': like_count,
+                        'forward_count': forward_count,
+                        'collect_count': collect_count,
+                        'comment_count': comment_count
+                        }
+                result = {'code': 200, 'data': data}
+                return JsonResponse(result)
+    if request.method == 'POST':
+        result = {'code': 30107, 'error': '请使用GET请求!'}
         return JsonResponse(result)
 
-def my_index(request):
-    pass
+
+@logging_check
+def detail_blog(request):
+    id = request.GET.get('blogid')
+    userme = request.myuser
+    if request.method == 'POST':
+        result = {'code': 30107, 'error': '请使用GET请求!'}
+        return JsonResponse(result)
+    if request.method == 'DELETE':
+        # http://127.0.0.1:8000/v1/community/index?blogid=xxx
+        try:
+            blog = Blog.objects.get(id=id)
+            blog.is_active = False
+            blog.save()
+        except Exception as e:
+            print('删除博客错误\n', e)
+            result = {'code': 30108, 'error': '请给我博客id!'}
+            return JsonResponse(result)
+        result = {'code': 200, 'username': userme}
+        return JsonResponse(result)
+
+    if request.method == 'GET':
+        # http://127.0.0.1:8000/v1/community/index?blogid=xxx
+        try:
+            blog = Blog.objects.get(id=id)
+            blog.is_active = False
+            blog.save()
+        except Exception as e:
+            print('获得博客错误\n', e)
+            result = {'code': 30108, 'error': '请给我博客id!'}
+            return JsonResponse(result)
+        username = blog.userprofile.username
+        title = blog['title']
+        tag_name = blog.tag.tag_name
+        content = blog['content']
+        like_count = blog['like_count']
+        forward_count = blog['forward_count']
+        collect_count = blog['collect_count']
+        comment_count = blog['comment_count']
+        data = {'user_me': userme,
+                'username': username,
+                'title': title,
+                'tag_name': tag_name,
+                'content': content,
+                'like_count': like_count,
+                'forward_count': forward_count,
+                'collect_count': collect_count,
+                'comment_count': comment_count
+                }
+        result = {'code': 200, 'data': data}
+        return JsonResponse(result)
