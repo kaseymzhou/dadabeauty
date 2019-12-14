@@ -149,7 +149,7 @@ CORS_ALLOW_HEADERS = (
 )
 
 
-STATIC_URL = '/static/'
+
 APPEND_SLASH = False
 JWT_TOKEN_KEY = '123456'
 
@@ -164,6 +164,41 @@ WEIBO_CLIENT_ID='467640713'
 WEIBO_CLIENT_SECRET='d5ba428ff942a99743e1fe10da4a199b'
 WEIBO_REDIRECT_URI='http://127.0.0.1:7001/dadabeauty/index.html'
 
+#项目目录下新建commomStatic目录，用来存放多个App之间公共的静态资源
 STATICFILES_DIRS = (os.path.join(BASE_DIR,'static'),)
 
-MEDIA_ROOT = os.path.join(BASE_DIR,'static/upload_profile')
+# 某个具体的App下新建static目录，用来存放与App相关的静态资源
+STATIC_URL = '/static/'
+
+#配合Nginx使用的。作用是收集（复制）每个App下static中静态资源以及项目commonStatic中的静态资源到STATIC_ROOT对应的django_static文件夹中
+STATIC_ROOT = '/tedu/dadabeauty/django_static'
+
+# 配置redis数据库相关设置：
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     },
+#     "verify_email": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/2",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     },
+#     "products": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/5",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     },
+# }
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+PIC_URL = "http://127.0.0.1:8000{}".format(MEDIA_URL)
+

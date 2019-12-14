@@ -261,7 +261,7 @@ class InterestedChoiceView(View):
         user_interests_list = []
         for i in range(len(interests_list)):
             interest = Interests_User.objects.create(uid=uid,iid=interests_list[i])
-            user_interests_list.append(Interests.object.filter(id=i).field)
+            user_interests_list.append(Interests.objects.filter(id=i).field)
         # 向前端返回数据 例子{'code':200,'data':{'id':1,'user_interests_list':'小清新风','欧美妆容'}}
         result = {'code':200,'data':{'id':uid,'user_interests_list':user_interests_list}}
         return JsonResponse(result)
@@ -350,7 +350,7 @@ class FanView(View):
         followed_id = json_obj.get('followed_id')
         fans_id = json_obj.get('fans_id')
         # 1.查
-        followed = UserProfile.object.filter(followed_id=followed_id,fans_id=fans_id)
+        followed = UserProfile.objects.filter(followed_id=followed_id,fans_id=fans_id)
         if not followed:
             return JsonResponse({'code': 10112, 'error': 'not found the user'})
         followed = followed[0]
