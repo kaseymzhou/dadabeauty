@@ -118,3 +118,5 @@ def index(request):
             result = {'code': 30107, 'error': '请使用GET请求!'}
         return JsonResponse(result)
 
+def my_index(request):
+    pass
