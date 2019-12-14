@@ -28,7 +28,7 @@ def send_topics(request, author_name):
         if not tag:
             result = {'code': 30102, 'error': 'tag不得为空!'}
             return JsonResponse(result)
-        tag_object = Tag.objects.get(tar_name = tag)
+        tag_object = Tag.objects.get(tar_name=tag)
         # 文章内容
         content = json_obj.get('content')
         if not content:
@@ -55,5 +55,66 @@ def send_topics(request, author_name):
         res = {'code': 200, 'username': author.username}
         return JsonResponse(res)
 
-def
+
+@logging_check
+def index(request):
+    # http://127.0.0.1:8000/v1/community/index  访问所有博客
+    # http://127.0.0.1:8000/v1/community/index?tag  访问tag标签博客
+    if request.method == 'GET':
+        tag = request.GET.get('tag')
+        if not tag:
+            blog_list = Blog.objects.order_by('create_time')
+            for item in blog_list:
+                if item['is_active'] == True:
+                    username = item.userprofile.username
+                    title = item['title']
+                    tag_name = item.tag.tag_name
+                    content = item['content']
+                    like_count = item['like_count']
+                    forward_count = item['forward_count']
+                    collect_count = item['collect_count']
+                    comment_count = item['comment_count']
+                    data = {'username ': username,
+                            'title ': title,
+                            'tag_name ': tag_name,
+                            'content ': content,
+                            'like_count ': like_count,
+                            'forward_count ': forward_count,
+                            'collect_count ': collect_count,
+                            'comment_count ': comment_count
+                            }
+                    result = {'code': 200, 'data': data}
+                    return JsonResponse(result)
+        else:
+            tag = Tag.objects.filter(tag_name=tag)
+            if not tag:
+                result = {'code': 30106, 'error': '这个标签不存在 !'}
+                return JsonResponse(result)
+            tag_name = tag[0]['tag_name']
+            blog_list = Blog.objects.order_by('create_time')
+            for item in blog_list:
+                if item['tag_name'] == tag_name:
+                    if item['is_active'] == True:
+                        username = item.userprofile.username
+                        title = item['title']
+                        tag_name = item.tag.tag_name
+                        content = item['content']
+                        like_count = item['like_count']
+                        forward_count = item['forward_count']
+                        collect_count = item['collect_count']
+                        comment_count = item['comment_count']
+                        data = {'username ': username,
+                                'title ': title,
+                                'tag_name ': tag_name,
+                                'content ': content,
+                                'like_count ': like_count,
+                                'forward_count ': forward_count,
+                                'collect_count ': collect_count,
+                                'comment_count ': comment_count
+                                }
+                        result = {'code': 200, 'data': data}
+                        return JsonResponse(result)
+        if request.method == 'post':
+            result = {'code': 30107, 'error': '请使用GET请求!'}
+        return JsonResponse(result)
 

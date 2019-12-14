@@ -21,6 +21,7 @@ class Tag(models.Model):
 class Blog(models.Model):
     title = models.CharField('标题', max_length=100)
     content = models.TextField(verbose_name='文章内容')
+    like_count = models.IntegerField(default=0,verbose_name='点赞数量')
     forward_count = models.IntegerField(default=0, verbose_name='转发数量')
     collect_count = models.IntegerField(default=0, verbose_name='收藏数量')
     comment_count = models.IntegerField(default=0, verbose_name='评论数量')
