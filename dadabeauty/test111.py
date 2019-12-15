@@ -18,12 +18,19 @@ r = redis.Redis(host='127.0.0.1',port=6379,db=7)
 #
 # print(new_rank_list)
 
-r.set('index_cache',"{'a':1}")
-r.set('index_cache',"{'a':2}")
-print(r.get('index_cache'))
+# r.set('index_cache',"{'a':1}")
+# r.set('index_cache',"{'a':2}")
+# print(r.get('index_cache'))
+#
+# r.set("name","zhangsan")
+# print(r.get("name"))
+#
+#
+# a = {'A':{'a':2}}
 
-r.set("name","zhangsan")
-print(r.get("name"))
+b = {'A':[1,2,3]}
 
 
-a = {'A':{'a':2}}
+h = r.hexists("product:buy",1001)
+
+print(h is False)

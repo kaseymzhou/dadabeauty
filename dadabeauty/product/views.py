@@ -1,14 +1,13 @@
 from django.conf import settings
 from django.http import HttpResponse
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.generic import View
 from .models import *
-from django_redis import get_redis_connection
 import redis
 import json
 from django.core.paginator import Paginator
 from tools.logging_check import logging_check
+from user.models import *
 # Create your views here.
 
 r = redis.Redis(host='127.0.0.1',port=6379,db=2)
@@ -60,7 +59,7 @@ class IndexShow(View):
         return JsonResponse(result)
 
 # 点进子类连接，显示子类产品（按updated_time从新到旧排）
-class ProductsLiistView(View):
+class ProductsListView(View):
     def get(self,request,subclass_id):
         """
         :param request:
@@ -116,22 +115,27 @@ class ProductsDetailView(View):
         # 无缓存
         if redis_detail is None:
             print("未使用缓存")
+            """
+            返回给前端的商品信息数据结构
+            sku_details = {'name':name, 'spu':spu, 'img'=img,
+                             {'diff':[source:price,source:price,source:price]},
+                             {Sale_attr_name:[val_id:val,val_id:val,val_id:val]}
+                             'comment_details':comment_details}
+                             
+            """
             try:
                 sku_item = Sku.objects.get(id=sku_id)
                 sku_source_item = Sku_source.objects.filter(sku_id=sku_id)
             except:
                 # 判断是否有当前sku
-                result = {'code': 40300, 'error': "Such sku doesn' exist", }
+                result = {'code': 30300, 'error': "相关产品不存在", }
                 return JsonResponse(result)
 
             sku_catalog = sku_item.spu_id.name
             sku_details['image'] = str(sku_item.default_image_url)
             sku_details["spu"] = sku_item.spu_id.id
             sku_details["name"] = sku_item.name
-            # sku_dettails = {'name':name, 'spu':spu, 'img'=img,
-            #                 {'diff':[source:price,source:price,source:price]},
-            #                 {Sale_attr_name:[val_id:val,val_id:val,val_id:val]}
-            #                 }
+
             source_list = []
             for i in sku_source_item:
                 sku_source_dic = {}
@@ -160,46 +164,97 @@ class ProductsDetailView(View):
                 val_id_val_list.append(val_dic)
                 sku_details[Sale_attr_name] = val_id_val_list
 
-            # comment_details = {comment_count:comment_count,
-            #                               {comment_id:{username:username,
-            #                               profile:profile,
-            #                               content:content,
-            #                               replies:{reply1_id:reply1,reply2_id:reply2...}}
-            #
-            #                   ........................................}
+            """
+            返回给前端时的评论区数据结构
+            comments_info = {
+                            'total_comments_count':total_comment_count,
+                            per_comment_detail:[
+                                                一条评论一个字典，所有评论字典组成一个大列表构成comments_info字典里per_comment_detail这个key的value
+                                                划分依据：列表好遍历，字典好取值（key是固定的）
+
+                                                {'comment_id' : comment_id,
+                                                'comment_username' : comment_username,
+                                                'comment_user_profile' : comment_user_profile,
+                                                'comment_content' : comment_content,
+                                                'comment_replies' : [
+                                                                    {'comment_reply_1' : {
+                                                                                        'reply_username' : reply_username,
+                                                                                        'reply_profile' : reply_profile,
+                                                                                        'reply_content' : reply_content
+                                                                                         },
+                                                                    {'comment_reply_2' : {
+                                                                                        'reply_username' : reply_username,
+                                                                                        'reply_profile' : reply_profile,
+                                                                                        'reply_content' : reply_content
+                                                                                         },
+                                                                    {'comment_reply_3' : {
+                                                                                        'reply_username' : reply_username,
+                                                                                        'reply_profile' : reply_profile,
+                                                                                        'reply_content' : reply_content
+                                                                                         }
+
+                                                                    ]
+
+                                                },
+                                                ...
+                                                ]
+                            }
+            """
+
             comment_details = {}
+            total_comments_count = r.hget('product:comment',sku_id)
+            comment_details['total_comments_count'] = total_comments_count
+            per_comment_detail_dic = []
+
+
             comments = Comment.objects.filter(sku_id=sku_id,isActive=True)
             for item in comments:
+                one_comment_info = {}
                 c_id = item.id
-                per_comment_info = {}
-                per_comment_info['content'] = item.content
-                # 查询每条评论对应的回复
-                replies = Reply.objects.filter(c_id=c_id)
-                replies_dic = {}
+                one_comment_info['comment_id'] = c_id
+                uid = item.uid
+                users = UserProfile.objects.filter(id=uid)
+                if not users:
+                    return JsonResponse({'code':30112,'data':'查看该用户评论失败'})
+                comment_username = users[0].username
+                one_comment_info['comment_username']=comment_username
+                comment_user_profile = users[0].profile_image_url
+                one_comment_info['comment_user_profile'] = comment_user_profile
+                comment_user_profile['comment_content'] = item.content
+                # 获取每条评论对应的回复
+                replies = Reply.objects.filter(c_id=c_id,isActive=True)
+                replies_dic = []
+                i = 1
+
                 for item in replies:
-                    replies_dic[item.id] = item.content
-                per_comment_info['replies']=replies_dic
+                    one_reply_info = {}
+                    one_reply_info_detail = {}
+                    users = UserProfile.objects.filter(id=item.uid)
+                    reply_username = users[0].username
+                    reply_profile = users[0].profile_image_url
+                    reply_content = item.content
+                    one_reply_info_detail['reply_username'] = reply_username
+                    one_reply_info_detail['reply_profile'] = reply_profile
+                    one_reply_info_detail['reply_content'] = reply_content
+                    one_reply_info['comment_reply_%s'%(i)] = one_reply_info_detail
+                    replies_dic.append(one_reply_info['comment_reply_%s'%(i)])
+                    i += 1
+                one_comment_info['comment_replies'] = replies_dic
+                per_comment_detail_dic.append(one_comment_info)
+            comment_details['per_comment_detail'] = per_comment_detail_dic
+            sku_details['comment_details'] = comment_details
 
 
-
-
-
-
-
-
-
-
-            # 写入缓存
+        # 写入缓存
             r.setex('index_detail_%s'%sku_id,60*60*24,json.dumps(sku_details))
 
-            # 商品详细页评论、回复展示
-
+        # 商品详细页评论、回复展示
         else:
             print("使用缓存")
             sku_details = json.loads(redis_detail)
 
-        result = {'code': 200, 'data': sku_details,  'base_url': settings.PIC_URL}
-        return JsonResponse(result)
+            result = {'code': 200, 'data': sku_details,  'base_url': settings.PIC_URL}
+            return JsonResponse(result)
 
 
 # 评论
@@ -218,7 +273,7 @@ class Comment_product(View):
 
         # 判断是否在redis中曾经有设立过计数key
         sku_comment_count = r.hexists('product:comment',sku_id)
-        if not sku_comment_count:
+        if sku_comment_count is False:
             r.hset('product:comment',sku_id,0)
         # redis做评论计数
         r.hincrby('peoducts:comment',sku_id,1)
@@ -306,7 +361,7 @@ class LikeProduct(View):
 
         # 判断是否在redis中曾经有设立过计数key
         sku_like_count = r.hexists('product:like', sku_id)
-        if not sku_like_count:
+        if sku_like_count is False:
             r.hset('product:like', sku_id, 0)
         # redis做评论计数
         r.hincrby('peoducts:like', sku_id, 1)
@@ -330,5 +385,47 @@ class LikeProduct(View):
         # redis做评论计数
         sku_id = like.sku_id
         r.hincrby('product:like', sku_id, -1)
+        result = {'code': 200, 'data': '取消点赞成功'}
+        return JsonResponse(result)
+
+# 收藏商品
+class CollectProducts(View):
+    @logging_check
+    def post(self,request):
+        data = request.body
+        if not data:
+            result = {'code': '30109', 'error': '收藏失败，请重试'}
+            return JsonResponse(result)
+        json_obj = json.loads(data)
+        uid = json_obj.get('uid')
+        sku_id = json_obj.get('sku_id')
+        Collect.objects.create(uid=uid,sku_id=sku_id)
+
+        # 判断是否在redis中曾经有设立过计数key
+        sku_collect_count = r.hexists('product:collect', sku_id)
+        if sku_collect_count is False:
+            r.hset('product:collect', sku_id, 0)
+        # redis做评论计数
+        r.hincrby('product:collect', sku_id, 1)
+        # mysql数据库录入
+        result = {'code':200,'data':'收藏成功'}
+        return JsonResponse(result)
+    @logging_check
+    def delete(self, request):
+        data = request.body
+        if not data:
+            result = {'code': '30110', 'error': '取消收藏失败'}
+            return JsonResponse(result)
+        json_obj = json.loads(data)
+        collect_id = json_obj.get('collect_id')
+        collects = Collect.objects.filter(id=collect_id)
+        if not collects:
+            return JsonResponse({'code': 30111, 'error': '无法取消收藏'})
+        collect = collects[0]
+        collect.isActive = False
+        collect.save()
+        # redis做评论计数
+        sku_id = collect.sku_id
+        r.hincrby('product:collect', sku_id, -1)
         result = {'code': 200, 'data': '取消点赞成功'}
         return JsonResponse(result)

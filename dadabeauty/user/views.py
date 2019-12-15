@@ -10,19 +10,328 @@ import requests
 from django.core.mail import send_mail
 from django.db import transaction
 from django.views.generic.base import View
-from django.http import HttpResponse, JsonResponse,Http404
-from django.shortcuts import render
+from django.http import JsonResponse,Http404
 from .models import *
 from django.conf import settings
 import os
 from dtoken.views import make_token
 from .tasks import send_active_email
 from tools.logging_check import logging_check
-from django.utils.decorators import method_decorator
+from community.models import *
+from product.models import *
 
 # Create your views here.
 
 r = redis.Redis(host='127.0.0.1',port=6379,db=0)
+
+# 用户个人主页展示
+class PersonalIndex(View):
+    @logging_check
+    def get(self,request,uid):
+        '''
+        返给前端的数据结构:
+        'data':{
+            'username':username,
+            'description':description,
+            'profile_img':profile_img,
+            'blogs':[
+                    {'title':title,
+                    'content':content
+                    'created_time':created_time,
+                    'like_count':like_count,
+                    'comment_count':comment_count,
+                    'forward_count':forward_count},
+                    ....
+                    ]
+                }
+        '''
+        users = UserProfile.objects.filter(id=uid)
+        if not users:
+            return JsonResponse({'code':10113,'data':'没找到该用户'})
+        user = users[0]
+        username = user.username
+        description = user.description
+        profile_img = user.profile_image_url
+        all_blog_list = Blog.objects.filter(uid=uid,isActive=True).order_by('-updated_time')
+        if not all_blog_list:
+            return JsonResponse({'code':10114,'data':'您还未发表文章'})
+        # 只取前三篇
+        blog3_list = all_blog_list[:3]
+        blogs_list = []
+        for item in blog3_list:
+            per_blog_info_dic ={}
+            per_blog_info_dic['title']=item.title
+            per_blog_info_dic['content']=item.content
+            per_blog_info_dic['created_time']=item.created_time
+            per_blog_info_dic['like_count']=item.like_count
+            per_blog_info_dic['comment_count']=item.comment_count
+            per_blog_info_dic['forward_count']=item.forward_count
+            blogs_list.append(per_blog_info_dic)
+
+        result = {'code':200,'data':{
+            'username':username,
+            'description':description,
+            'profile_img':profile_img,
+            'blogs':blogs_list
+        }}
+        return JsonResponse(result)
+
+
+# 用户个人主页'我的关注'页面展示
+class FocusView(View):
+    @logging_check
+    def get(self,request,uid):
+        '''
+                返给前端的数据结构:
+                'data':{
+                    'uid':uid,
+                    'follow_amount':follow_count,
+                    'follow_info':[
+                                {'followed_username':followed_username,
+                                 'followed_profile':followed_profile
+                                },
+                                {'followed_username':followed_username,
+                                 'followed_profile':followed_profile
+                                },
+                                ....
+
+                                 ]
+                        }
+                '''
+        follow_count = r.hget('fans:amount',uid)
+        follows = Follow.objects.filter(fans_id=uid,isActive=True).order_by('-updated_time')
+        if not follows:
+            return JsonResponse({'code':10115,'data':'你还没有关注过别人哦'})
+        follow_info = []
+        for item in follows:
+            per_follow_info = {}
+            followed_id = item.followed_id
+            followers = UserProfile.objects.filter(id=followed_id)
+            followed_username = followers[0].username
+            followed_profile = followers[0].profile_image_url
+            per_follow_info['followed_username']=followed_username
+            per_follow_info['followed_profile']=followed_profile
+            follow_info.append(per_follow_info)
+        result = {'code':200,'data':{
+            'uid':uid,
+            'follow_amount':follow_count,
+            'follow_info':follow_info
+        }}
+        return JsonResponse(result)
+
+# 用户个人主页'我的粉丝'页面展示
+class FansView(View):
+    @logging_check
+    def get(self, request, uid):
+        '''
+                返给前端的数据结构:
+                'data':{
+                    'uid':uid,
+                    'fans_amount':fans_count,
+                    'fans_info':[
+                                {'fans_username':fans_username,
+                                 'fans_profile':fans_profile
+                                },
+                                {'fans_username':fans_username,
+                                 'fans_profile':fans_profile
+                                },
+                                ....
+
+                                 ]
+                        }
+                '''
+        fans_count = r.hget('followed_id', uid)
+        fans = Follow.objects.filter(followed=uid, isActive=True).order_by('-updated_time')
+        if not fans:
+            return JsonResponse({'code': 10116, 'data': '你还没有粉丝哦'})
+        fans_info = []
+        for item in fans:
+            per_fans_info = {}
+            fans_id = item.fans_id
+            fans_profile_info = UserProfile.objects.filter(id=fans_id)
+            fans_username = fans_profile_info[0].username
+            fans_profile = fans_profile_info[0].profile_image_url
+            per_fans_info['fans_username'] = fans_username
+            per_fans_info['fans_profile'] = fans_profile
+            fans_info.append(per_fans_info)
+        result = {'code': 200, 'data': {
+            'uid': uid,
+            'follow_amount': fans_count,
+            'follow_info': fans_info
+        }}
+        return JsonResponse(result)
+
+
+# 用户个人主页'收藏商品'页面展示
+class CollectProductView(View):
+    @logging_check
+    def get(self,uid):
+        '''
+        返给前端的数据结构:
+        'data':{
+            'uid':uid,
+            'blogs':[
+                    {'title':title,
+                            'content':content
+                            'created_time':created_time,
+                            'like_count':like_count,
+                            'comment_count':comment_count,
+                            'forward_count':forward_count},
+                    ....
+                    ]
+                }
+        '''
+        sku_info_list=[]
+        collect_list = Collect.objects.filter(uid=uid,isActive=True).order_by('-updated_time')
+        if not collect_list:
+            return JsonResponse({'code':10117,'data':'你还没收藏产品哦'})
+        for item in collect_list:
+            per_sku_info = {}
+            sku_id = item.sku_id
+            sku_info = Sku.objects.filter(id=sku_id)
+            sku_name = sku_info.name
+            sku_img = sku_info.default_img_url
+            collect_count = r.hget('product:collect',sku_id)
+            per_sku_info['sku_name']=sku_name
+            per_sku_info['sku_img']=sku_img
+            per_sku_info['collect_count']=collect_count
+            sku_info_list.append(per_sku_info)
+        result = {'code':200,'data':{
+                                    'uid':uid,
+                                    'sku_info':sku_info_list}
+                  }
+        return JsonResponse(result)
+
+
+# 用户个人主页'收藏文章'页面展示
+class CollectBlogView(View):
+    @logging_check
+    def get(self,uid):
+        '''
+        返给前端的数据结构:
+        'data':{
+            'uid':uid,
+            'blog_info':[
+                        {'sku_name':sku_name,
+                         'sku_img':sku_img,
+                         'collect_count':collect_count
+                        },
+                        {'sku_name':sku_name,
+                         'sku_img':sku_img,
+                         'collect_count':collect_count
+                        },
+                        ....
+                         ]
+                }
+        '''
+        all_blog_list = Blog.objects.filter(uid=uid, isActive=True).order_by('-updated_time')
+        if not all_blog_list:
+            return JsonResponse({'code': 10118, 'data': '您还未发表文章'})
+        blogs_list = []
+        for item in all_blog_list:
+            per_blog_info_dic = {}
+            per_blog_info_dic['title'] = item.title
+            per_blog_info_dic['content'] = item.content
+            per_blog_info_dic['created_time'] = item.created_time
+            per_blog_info_dic['like_count'] = item.like_count
+            per_blog_info_dic['comment_count'] = item.comment_count
+            per_blog_info_dic['forward_count'] = item.forward_count
+            blogs_list.append(per_blog_info_dic)
+
+        result = {'code': 200, 'data': {
+            'uid': uid,
+            'blogs': blogs_list
+        }}
+        return JsonResponse(result)
+
+
+# 用户个人主页'修改个人基本信息'页面展示
+class ChangePersonalInfo(View):
+    @logging_check
+    def get(self, request,uid):
+        # 返给前端当前用户的基本信息
+        user_info = UserProfile.objects.filter(id=uid)
+        user_info = user_info[0]
+        uid = user_info.uid
+        username = user_info.username
+        email = user_info.email
+        phone = user_info.phone
+        gender = user_info.gender
+        birthday = user_info.birthday
+        return JsonResponse({'code': 200,'data':{
+                                                 'uid':uid,
+                                                 'username':username,
+                                                 'email':email,
+                                                 'phone':phone,
+                                                 'gender':gender,
+                                                 'birthday':birthday}
+                             })
+    @logging_check
+    def post(self, request):
+        # 接收前端返回来的最新用户信息
+        data = request.body
+        if not data:
+            result = {'code': '10119', 'error': '请提供完整信息'}
+            return JsonResponse(result)
+        json_obj = json.loads(data)
+        uid = json_obj.get('uid')
+        username = json_obj.get('username')
+        email = json_obj.get('email')
+        phone = json_obj.get('phone')
+        gender = json_obj.get('gender')
+        birthday = json_obj.get('birthday')
+        # 检查用户名是否可用
+        old_user = UserProfile.objects.filter(username=username)
+        if old_user:
+            result = {'code': '10120', 'error': '用户名已存在!'}
+            return JsonResponse(result)
+        # 修改用户信息
+        try:
+            user = UserProfile.object.filter(id=uid)
+            user = user[0]
+            user.username = username
+            user.email = email
+            user.phone = phone
+            user.gender = gender
+            user.birthday = birthday
+            user.save()
+        except Exception as e:
+            result = {'code': '10121', 'error': '用户名已存在!'}
+            return JsonResponse(result)
+        # 生成、签发token
+        # {'code':200, 'username':'xxxx', 'data':{'token':xxxx}}
+        token = make_token(username)
+        return JsonResponse({'code': 200, 'username': username, 'data': {'token': token.decode()}})
+
+
+# 用户个人主页'修改密码'页面展示
+class ChangePassword(View):
+    @logging_check
+    def get(self,request):
+        return JsonResponse({'code':200})
+    @logging_check
+    def get(self,request):
+        data = request.body
+        if not data:
+            result = {'code': '10122', 'error': '请提供完整的信息'}
+            return JsonResponse(result)
+        json_obj = json.loads(data)
+        uid = json_obj.get('uid')
+        old_password = json_obj.get('old_password')
+        new_password = json_obj.get('new_password')
+        m = hashlib.md5()
+        m.update(old_password.encode())
+        user = UserProfile.objects.filter(id=uid)
+        user = user[0]
+        old_password_record = user.password
+        if old_password_record != m.hexdigest():
+            return JsonResponse({'code':'10123','data':'您的旧密码有误'})
+        else:
+            m.update(new_password.encode())
+            user.password = m.hexdigest()
+            user.save()
+        return JsonResponse({'code':200,'data':'密码修改成功'})
+
 
 # 用户注册
 class Users(View):
@@ -40,7 +349,6 @@ class Users(View):
         phone = json_obj.get('phone')
         gender = json_obj.get('gender')
         birthday = json_obj.get('birthday')
-        print('--------------------',username,password,email,phone,gender,birthday)
         # 检查用户名是否可用
         old_user = UserProfile.objects.filter(username=username)
         if old_user:
@@ -242,13 +550,11 @@ def get_weibo_login_url():
 # 用户挑选感兴趣的部分
 
 class InterestedChoiceView(View):
-    @method_decorator(logging_check,name='dispatch')
-    def dispatch(self, request, *args, **kwargs):
-        return super(InterestedChoiceView, self).dispatch(request, *args, **kwargs)
-
+    @logging_check
     def get(self,request):
         result = {'code':200}
         return JsonResponse(result)
+    @logging_check
     def post(self,request):
         data = request.body
         if not data:
@@ -267,13 +573,11 @@ class InterestedChoiceView(View):
         return JsonResponse(result)
 
 # 设置头像与个性签名
-
 class FurtherInfoView(View):
-    @method_decorator(logging_check)
-    def dispatch(self, request, *args, **kwargs):
-        return super(FurtherInfoView, self).dispatch(request, *args, **kwargs)
+    @logging_check
     def get(self,request):
         return JsonResponse({'code':200})
+    @logging_check
     def post(self, request):
         try:
             a_profile = request.FILES['myfile']
@@ -306,11 +610,10 @@ class FurtherInfoView(View):
 
 # 关注用户
 class FanView(View):
-    @method_decorator(logging_check)
-    def dispatch(self, request, *args, **kwargs):
-        return super(FanView, self).dispatch(request, *args, **kwargs)
+    @logging_check
     def get(self, request):
         return JsonResponse({'code':10113,'error':'请使用post方式'})
+    @logging_check
     def post(self,request):
         data = request.body #{'followed_id':01,'fans_id':02}
         if not data:
@@ -329,6 +632,7 @@ class FanView(View):
             else:
                 if followed.isActive is False:
                     # 曾经关注过该用户但取消了
+                    followed = followed[0]
                     followed.isActive = True
                     followed.save()
                     r.hincrby('followed:amount',followed_id,1) # 被关注用户redis粉丝数加1
@@ -340,6 +644,7 @@ class FanView(View):
             result = {'code':200,'data':{'followed_id':followed_id,'fans_id':fans_id,'followed_no':followed_no,
                                          'fans_no':fans_no}}
         return JsonResponse(result)
+    @logging_check
     def delete(self,request):
         # 取消关注
         data = request.body  # {'followed_id':01,'fans_id':02}
