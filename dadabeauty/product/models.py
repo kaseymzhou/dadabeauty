@@ -116,7 +116,7 @@ class Sale_attr_val(models.Model):
         return 'id :%s; Sale_attr_val:%s' % (self.id, self.val)
 
 class Sku_img(models.Model):
-    img_url = models.URLField('sku图片')
+    img_url = models.ImageField('sku图片')
     sku_id = models.ForeignKey(Sku)
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)

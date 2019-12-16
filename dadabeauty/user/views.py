@@ -379,7 +379,7 @@ class Users(View):
         code_str_bs = base64.urlsafe_b64encode(code_str.encode())
         # 将随机码组合存储在redis中 可以扩展成只存储1-3天
         r.set('email_active_%s' % (username), code_str)
-        active_url = 'http://127.0.0.1:7000/dadashop/templates/active.html?code=%s' % (code_str_bs.decode())
+        active_url = 'http://127.0.0.1:7001/dadabeauty/active.html?code=%s' % (code_str_bs.decode())
         send_active_email.delay(email, active_url)
         return JsonResponse({'code': 200, 'username': username, 'data': {'token': token.decode()}})
 

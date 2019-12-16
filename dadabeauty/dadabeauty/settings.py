@@ -157,7 +157,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.163.com'
 EMAIL_PORT = 25  # SMTP服务的端口号
 EMAIL_HOST_USER = 'dadabeauty1908@163.com'
-EMAIL_HOST_PASSWORD = 'dadabeauty1908'
+EMAIL_HOST_PASSWORD = 'dadabeauty123456'
 EMAIL_USE_TLS = True
 
 WEIBO_CLIENT_ID='467640713'

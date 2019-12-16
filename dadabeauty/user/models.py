@@ -15,7 +15,7 @@ class UserProfile(models.Model):
     gender = models.SmallIntegerField(verbose_name='性别',choices=GENDER_CHOICE)
     birthday = models.DateField()
     isActive = models.BooleanField(default=False,verbose_name='是否激活')
-    profile_image_url = models.CharField(verbose_name='头像',default='/static/default_pic/default_profile.jpg',
+    profile_image_url = models.ImageField(verbose_name='头像',default='/static/default_pic/default_profile.jpg',
                                          max_length=100)
     description = models.CharField(verbose_name='个性签名',null=True,max_length=100)
     created_time = models.DateTimeField(auto_now_add=True)
