@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="58dea69e-9d65-477d-bd34-4257e2a50471" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/community/111.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/community/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/community/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -50,8 +49,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/community/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="303">
-              <caret line="46" column="28" lean-forward="true" selection-start-line="46" selection-start-column="28" selection-end-line="46" selection-end-column="28" />
+            <state relative-caret-position="1134">
+              <caret line="46" column="28" selection-start-line="46" selection-start-column="28" selection-end-line="46" selection-end-column="28" />
               <folding>
                 <element signature="e#0#28#0" expanded="true" />
               </folding>
@@ -62,8 +61,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/community/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="438">
-              <caret line="347" column="40" selection-start-line="347" selection-start-column="40" selection-end-line="347" selection-end-column="40" />
+            <state relative-caret-position="5946">
+              <caret line="513" column="30" lean-forward="true" selection-start-line="513" selection-start-column="30" selection-end-line="513" selection-end-column="30" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -84,8 +83,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/community/urls.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="702">
-              <caret line="13" column="1" lean-forward="true" selection-start-line="13" selection-start-column="1" selection-end-line="13" selection-end-column="1" />
+            <state relative-caret-position="324">
+              <caret line="13" column="1" selection-start-line="13" selection-start-column="1" selection-end-line="13" selection-end-column="1" />
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
               </folding>
@@ -111,6 +110,7 @@
         <option value="$PROJECT_DIR$/community/urls.py" />
         <option value="$PROJECT_DIR$/community/models.py" />
         <option value="$PROJECT_DIR$/community/111.py" />
+        <option value="$PROJECT_DIR$/community/migrations/111.py" />
         <option value="$PROJECT_DIR$/community/views.py" />
       </list>
     </option>
@@ -127,7 +127,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -143,6 +142,12 @@
             <path>
               <item name="dadabeauty" type="b2602c69:ProjectViewProjectNode" />
               <item name="dadabeauty" type="462c0819:PsiDirectoryNode" />
+              <item name="community" type="462c0819:PsiDirectoryNode" />
+              <item name="migrations" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="dadabeauty" type="b2602c69:ProjectViewProjectNode" />
+              <item name="dadabeauty" type="462c0819:PsiDirectoryNode" />
               <item name="product" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -154,6 +159,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -204,7 +210,14 @@
       <option name="project" value="LOCAL" />
       <updated>1576562221134</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="'更新评论'">
+      <created>1576570785727</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1576570785727</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -236,9 +249,12 @@
     <MESSAGE value="'更新my_index视图'" />
     <MESSAGE value="'更新my_index视图完整'" />
     <MESSAGE value="'更新点赞'" />
-    <option name="LAST_COMMIT_MESSAGE" value="'更新点赞'" />
+    <MESSAGE value="'更新评论'" />
+    <option name="LAST_COMMIT_MESSAGE" value="'更新评论'" />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/community/111.py" />
+    <entry file="file://$PROJECT_DIR$/community/migrations/111.py" />
     <entry file="file://$PROJECT_DIR$/user/views.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -266,6 +282,16 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/community/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1134">
+          <caret line="46" column="28" selection-start-line="46" selection-start-column="28" selection-end-line="46" selection-end-column="28" />
+          <folding>
+            <element signature="e#0#28#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/community/admin.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -274,35 +300,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/community/urls.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="702">
-          <caret line="13" column="1" lean-forward="true" selection-start-line="13" selection-start-column="1" selection-end-line="13" selection-end-column="1" />
+        <state relative-caret-position="324">
+          <caret line="13" column="1" selection-start-line="13" selection-start-column="1" selection-end-line="13" selection-end-column="1" />
           <folding>
             <element signature="e#0#32#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/community/models.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="303">
-          <caret line="46" column="28" lean-forward="true" selection-start-line="46" selection-start-column="28" selection-end-line="46" selection-end-column="28" />
-          <folding>
-            <element signature="e#0#28#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/community/111.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="519">
-          <caret line="42" selection-start-line="42" selection-end-line="73" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/community/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="438">
-          <caret line="347" column="40" selection-start-line="347" selection-start-column="40" selection-end-line="347" selection-end-column="40" />
+        <state relative-caret-position="5946">
+          <caret line="513" column="30" lean-forward="true" selection-start-line="513" selection-start-column="30" selection-end-line="513" selection-end-column="30" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>

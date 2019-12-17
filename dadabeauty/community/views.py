@@ -16,7 +16,7 @@ def send_topics(request):
     if request.method == 'POST':
         # 发表博客
         # http://127.0.0.1:8000/v1/community/send_topics?authorname=xxx
-        author_name = request.GET.get(', authorname')
+        author_name = request.GET.get('authorname')
         author = request.myuser
         if author.username != author_name:
             result = {'code': 30101, 'error': '非本人操作!'}
@@ -45,7 +45,7 @@ def send_topics(request):
     if request.method == 'GET':
         # 获得当前发送博客的界面
         # http://127.0.0.1:8000/v1/community/send_topics?authorname=xxx
-        author_name = request.GET.get(', authorname')
+        author_name = request.GET.get('authorname')
         authors = UserProfile.objects.filter(username=author_name)
         if not authors:
             result = {'code': 30105, 'error': 'The author is not existed !'}
@@ -64,116 +64,10 @@ def index(request):
         user_me = request.myuser
         tag = request.GET.get('tag_name')
         if not tag:
-            blog_list = Blog.objects.order_by('create_time')
+            blog_list = Blog.objects.filter('is_active' == True).order_by('create_time')
             for item in blog_list:
-                if item['is_active'] == True:
-                    id = item['id']
-                    username = item.userprofile.username
-                    title = item['title']
-                    tag_name = item.tag.tag_name
-                    content = item['content']
-                    create_time = item['create_time']
-                    like_count_exist = r.hexists('like:count', id)
-                    if like_count_exist:
-                        like_count = r.hget('like:count', id)
-                    else:
-                        like_count = 0
-                    forward_count_exist = r.hexists('forward:count', id)
-                    if forward_count_exist:
-                        forward_count = r.hget('forward:count', id)
-                    else:
-                        forward_count = 0
-                    collect_count_exist = r.hexists('collect:count', id)
-                    if collect_count_exist:
-                        collect_count = r.hget('collect:count', id)
-                    else:
-                        collect_count = 0
-                    comment_count_exist = r.hexists('comment:count', id)
-                    if comment_count_exist:
-                        comment_count = r.hget('comment:count', id)
-                    else:
-                        comment_count = 0
-                    data = {'id': id,
-                            'user_me': user_me,
-                            'username': username,
-                            'title': title,
-                            'tag_name': tag_name,
-                            'content': content,
-                            'crete_time': create_time,
-                            'like_count': like_count,
-                            'forward_count': forward_count,
-                            'collect_count': collect_count,
-                            'comment_count': comment_count
-                            }
-                    result = {'code': 200, 'data': data}
-                    return JsonResponse(result)
-        else:
-            tag = Tag.objects.filter(tag_name=tag)
-            if not tag:
-                result = {'code': 30106, 'error': '这个标签不存在 !'}
-                return JsonResponse(result)
-            tag_name = tag[0]['tag_name']
-            blog_list = Blog.objects.order_by('create_time')
-            for item in blog_list:
-                if item['tag_name'] == tag_name:
-                    if item['is_active'] == True:
-                        id = item['id']
-                        username = item.userprofile.username
-                        title = item['title']
-                        tag_name = item.tag.tag_name
-                        content = item['content']
-                        create_time = item['create_time']
-                        like_count_exist = r.hexists('like:count', id)
-                        if like_count_exist:
-                            like_count = r.hget('like:count', id)
-                        else:
-                            like_count = 0
-                        forward_count_exist = r.hexists('forward:count', id)
-                        if forward_count_exist:
-                            forward_count = r.hget('forward:count', id)
-                        else:
-                            forward_count = 0
-                        collect_count_exist = r.hexists('collect:count', id)
-                        if collect_count_exist:
-                            collect_count = r.hget('collect:count', id)
-                        else:
-                            collect_count = 0
-                        comment_count_exist = r.hexists('comment:count', id)
-                        if comment_count_exist:
-                            comment_count = r.hget('comment:count', id)
-                        else:
-                            comment_count = 0
-                        data = {'id': id,
-                                'user_me': user_me,
-                                'username': username,
-                                'title': title,
-                                'tag_name': tag_name,
-                                'content': content,
-                                'crete_time': create_time,
-                                'like_count': like_count,
-                                'forward_count': forward_count,
-                                'collect_count': collect_count,
-                                'comment_count': comment_count
-                                }
-                        result = {'code': 200, 'data': data}
-                        return JsonResponse(result)
-        if request.method == 'post':
-            result = {'code': 30107, 'error': '请使用GET请求!'}
-            return JsonResponse(result)
-
-
-@logging_check
-def my_index(request):
-    # http://127.0.0.1:8000/v1/community/index?authorname=xxx  访问特定人的博客主页
-    if request.method == 'GET':
-        authorname = request.GET.get('authorname')
-        author = UserProfile.objects.get(username=authorname)
-        user_me = request.myuser
-        blog_list = author.blog_set.order_by('create_time')
-        for item in blog_list:
-            if item['is_active'] == True:
-                username = item.userprofile.username
                 id = item['id']
+                username = item.userprofile.username
                 title = item['title']
                 tag_name = item.tag.tag_name
                 content = item['content']
@@ -198,6 +92,7 @@ def my_index(request):
                     comment_count = r.hget('comment:count', id)
                 else:
                     comment_count = 0
+                comments = Comment.objects.filter(b_id=id, isActive=True)
                 data = {'id': id,
                         'user_me': user_me,
                         'username': username,
@@ -208,10 +103,117 @@ def my_index(request):
                         'like_count': like_count,
                         'forward_count': forward_count,
                         'collect_count': collect_count,
-                        'comment_count': comment_count
+                        'comment_count': comment_count,
+                        'comments': comments  # 列表
                         }
                 result = {'code': 200, 'data': data}
                 return JsonResponse(result)
+        else:
+            tag = Tag.objects.filter(tag_name=tag)
+            if not tag:
+                result = {'code': 30106, 'error': '这个标签不存在 !'}
+                return JsonResponse(result)
+            tag_name = tag[0]['tag_name']
+            blog_list = Blog.objects.filter('tag_name' == tag_name, 'is_active' == True).order_by('create_time')
+            for item in blog_list:
+                id = item['id']
+                username = item.userprofile.username
+                title = item['title']
+                tag_name = item.tag.tag_name
+                content = item['content']
+                create_time = item['create_time']
+                like_count_exist = r.hexists('like:count', id)
+                if like_count_exist:
+                    like_count = r.hget('like:count', id)
+                else:
+                    like_count = 0
+                forward_count_exist = r.hexists('forward:count', id)
+                if forward_count_exist:
+                    forward_count = r.hget('forward:count', id)
+                else:
+                    forward_count = 0
+                collect_count_exist = r.hexists('collect:count', id)
+                if collect_count_exist:
+                    collect_count = r.hget('collect:count', id)
+                else:
+                    collect_count = 0
+                comment_count_exist = r.hexists('comment:count', id)
+                if comment_count_exist:
+                    comment_count = r.hget('comment:count', id)
+                else:
+                    comment_count = 0
+                comments = Comment.objects.filter(b_id=id, isActive=True)
+                data = {'id': id,
+                        'user_me': user_me,
+                        'username': username,
+                        'title': title,
+                        'tag_name': tag_name,
+                        'content': content,
+                        'crete_time': create_time,
+                        'like_count': like_count,
+                        'forward_count': forward_count,
+                        'collect_count': collect_count,
+                        'comment_count': comment_count,
+                        'comments': comments  # 列表
+                        }
+                result = {'code': 200, 'data': data}
+                return JsonResponse(result)
+        if request.method == 'post':
+            result = {'code': 30107, 'error': '请使用GET请求!'}
+            return JsonResponse(result)
+
+
+@logging_check
+def my_index(request):
+    # http://127.0.0.1:8000/v1/community/index?authorname=xxx  访问特定人的博客主页
+    if request.method == 'GET':
+        authorname = request.GET.get('authorname')
+        author = UserProfile.objects.get(username=authorname)
+        user_me = request.myuser
+        blog_list = author.blog_set.filter('is_active' == True).order_by('create_time')
+        for item in blog_list:
+            username = item.userprofile.username
+            id = item['id']
+            title = item['title']
+            tag_name = item.tag.tag_name
+            content = item['content']
+            create_time = item['create_time']
+            like_count_exist = r.hexists('like:count', id)
+            if like_count_exist:
+                like_count = r.hget('like:count', id)
+            else:
+                like_count = 0
+            forward_count_exist = r.hexists('forward:count', id)
+            if forward_count_exist:
+                forward_count = r.hget('forward:count', id)
+            else:
+                forward_count = 0
+            collect_count_exist = r.hexists('collect:count', id)
+            if collect_count_exist:
+                collect_count = r.hget('collect:count', id)
+            else:
+                collect_count = 0
+            comment_count_exist = r.hexists('comment:count', id)
+            if comment_count_exist:
+                comment_count = r.hget('comment:count', id)
+            else:
+                comment_count = 0
+            comments = Comment.objects.filter(b_id=id, isActive=True)
+            data = {'id': id,
+                    'user_me': user_me,
+                    'username': username,
+                    'title': title,
+                    'tag_name': tag_name,
+                    'content': content,
+                    'crete_time': create_time,
+                    'like_count': like_count,
+                    'forward_count': forward_count,
+                    'collect_count': collect_count,
+                    'comment_count': comment_count,
+                    'comments': comments  # 列表
+                    }
+            result = {'code': 200, 'data': data}
+            return JsonResponse(result)
     if request.method == 'POST':
         result = {'code': 30107, 'error': '请使用GET请求!'}
         return JsonResponse(result)
@@ -229,25 +231,26 @@ def my_index_forward(request):
             result = {'code': 30110, 'error': '该用户不存在!'}
             return JsonResponse(result)
         user_me = request.myuser
-        forward_list = author.forward_set.order_by('create_time')
+        forward_list = author.forward_set.filter('is_active' == True).order_by('create_time')
         for item in forward_list:
-            if item['is_active'] == True:
-                username = item.userprofile.username
-                id = item['id']
-                blog_title = item.blog.title
-                tag_name = item.tag.tag_name
-                content = item['content']
-                blog_content = item.blog.content
-                data = {'id': id,
-                        'user_me': user_me,
-                        'username': username,
-                        'blog_title': blog_title,
-                        'tag_name': tag_name,
-                        'content': content,
-                        'blog_content': blog_content,
-                        }
-                result = {'code': 200, 'data': data}
-                return JsonResponse(result)
+            username = item.userprofile.username
+            id = item['id']
+            blog_title = item.blog.title
+            tag_name = item.tag.tag_name
+            content = item['content']
+            blog_content = item.blog.content
+            comments = Comment.objects.filter(b_id=id, isActive=True)
+            data = {'id': id,
+                    'user_me': user_me,
+                    'username': username,
+                    'blog_title': blog_title,
+                    'tag_name': tag_name,
+                    'content': content,
+                    'blog_content': blog_content,
+                    'comments': comments  # 列表
+                    }
+            result = {'code': 200, 'data': data}
+            return JsonResponse(result)
     if request.method == 'POST':
         result = {'code': 30107, 'error': '请使用GET请求!'}
         return JsonResponse(result)
@@ -309,6 +312,45 @@ def detail_blog(request):
             comment_count = r.hget('comment:count', id)
         else:
             comment_count = 0
+
+        comment_details = {}
+        per_comment_detail_dic = []
+        comments = Comment.objects.filter(b_id=id, isActive=True)
+        for item in comments:
+            one_comment_info = {}
+            c_id = item.id
+            one_comment_info['comment_id'] = c_id
+            uid = item.uid
+            users = UserProfile.objects.filter(id=uid)
+            if not users:
+                return JsonResponse({'code': 30112, 'data': '查看该用户评论失败'})
+            comment_username = users[0].username
+            one_comment_info['comment_username'] = comment_username
+            comment_user_profile = users[0].profile_image_url
+            one_comment_info['comment_user_profile'] = comment_user_profile
+            comment_user_profile['comment_content'] = item.content
+            # 获取每条评论对应的回复
+            replies = Reply.objects.filter(c_id=c_id, isActive=True)
+            replies_dic = []
+            i = 1
+
+            for item in replies:
+                one_reply_info = {}
+                one_reply_info_detail = {}
+                users = UserProfile.objects.filter(id=item.uid)
+                reply_username = users[0].username
+                reply_profile = users[0].profile_image_url
+                reply_content = item.content
+                one_reply_info_detail['reply_username'] = reply_username
+                one_reply_info_detail['reply_profile'] = reply_profile
+                one_reply_info_detail['reply_content'] = reply_content
+                one_reply_info['comment_reply_%s' % (i)] = one_reply_info_detail
+                replies_dic.append(one_reply_info['comment_reply_%s' % (i)])
+                i += 1
+            one_comment_info['comment_replies'] = replies_dic
+            per_comment_detail_dic.append(one_comment_info)
+        comment_details['per_comment_detail'] = per_comment_detail_dic
+
         data = {'user_me': userme,
                 'username': username,
                 'title': title,
@@ -318,7 +360,8 @@ def detail_blog(request):
                 'like_count': like_count,
                 'forward_count': forward_count,
                 'collect_count': collect_count,
-                'comment_count': comment_count
+                'comment_count': comment_count,
+                'comment_details': comment_details
                 }
         result = {'code': 200, 'data': data}
         return JsonResponse(result)
