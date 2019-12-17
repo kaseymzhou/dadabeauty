@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="58dea69e-9d65-477d-bd34-4257e2a50471" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/community/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/community/views.py" afterDir="false" />
-    </list>
+    <list default="true" id="58dea69e-9d65-477d-bd34-4257e2a50471" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,8 +58,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/community/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5946">
-              <caret line="513" column="30" lean-forward="true" selection-start-line="513" selection-start-column="30" selection-end-line="513" selection-end-column="30" />
+            <state relative-caret-position="303">
+              <caret line="103" column="18" lean-forward="true" selection-start-line="103" selection-start-column="18" selection-end-line="103" selection-end-column="18" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -115,7 +112,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="67" />
     <option name="y" value="25" />
     <option name="width" value="926" />
@@ -217,7 +214,14 @@
       <option name="project" value="LOCAL" />
       <updated>1576570785727</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="'更新评论和回复'">
+      <created>1576576073243</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1576576073243</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -250,7 +254,8 @@
     <MESSAGE value="'更新my_index视图完整'" />
     <MESSAGE value="'更新点赞'" />
     <MESSAGE value="'更新评论'" />
-    <option name="LAST_COMMIT_MESSAGE" value="'更新评论'" />
+    <MESSAGE value="'更新评论和回复'" />
+    <option name="LAST_COMMIT_MESSAGE" value="'更新评论和回复'" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/community/111.py" />
@@ -310,8 +315,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/community/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5946">
-          <caret line="513" column="30" lean-forward="true" selection-start-line="513" selection-start-column="30" selection-end-line="513" selection-end-column="30" />
+        <state relative-caret-position="303">
+          <caret line="103" column="18" lean-forward="true" selection-start-line="103" selection-start-column="18" selection-end-line="103" selection-end-column="18" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>

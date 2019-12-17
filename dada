@@ -1,4 +1,5 @@
-发表博客:post:我要:
+发表博客:http://127.0.0.1:8000/v1/community/sendtopics?authorname=xxx
+	post:我要:
 	1.查询字符串:author_name
 	2.post:json{'title':title,'content':content,'tag':tag}
 	我给:jsonresponse{'code':200,'username': author.username}
@@ -11,34 +12,74 @@
 	我给:jsonresponse{'code': 200, 'username': author.username}
 	错误:jsonresponse{'code': 30105, 'error': '用户不存在!'}
 
-博客主页:get:我要:
-	1.查询字符串
+博客主页:http://127.0.0.1:8000/v1/community/index  访问所有博客
+	http://127.0.0.1:8000/v1/community/index?tag_name=xxx 访问特定标签的博客
+	get:我要:
+	1.查询字符串:无  或者  点标签tag_name
+	我给:JsonResponse{'code':200,'data':{'id': id,
+				            'user_me': user_me,
+				            'username': username,
+				            'title': title,
+				            'tag_name': tag_name,
+				            'content': content,
+					    'crete_time':create_time,
+				            'like_count': like_count,
+				            'forward_count': forward_count,
+				            'collect_count': collect_count,
+				            'comment_count': comment_count,
+					    'comments': comments  # 列表}}
+	错误:jsonresponse{'code': 30106, 'error': '这个标签不存在 !'}
+	     jsonresponse{'code': 30107, 'error': '请使用GET请求!'}
+
+访问某个人的博客主页:http://127.0.0.1:8000/v1/community/myindex?authorname=xxx
+	get:我要:
+	1.查询字符串:authorname
+	我给:JsonResponse{'code':200,'data':{'id': id,
+				            'user_me': user_me,
+				            'username': username,
+				            'title': title,
+				            'tag_name': tag_name,
+				            'content': content,
+					    'crete_time':create_time,
+				            'like_count': like_count,
+				            'forward_count': forward_count,
+				            'collect_count': collect_count,
+				            'comment_count': comment_count,
+					    'comments': comments  # 列表}}
+	错误:jsonresponse{'code': 30110, 'error': '该用户不存在!'}
+	     jsonresponse{'code': 30107, 'error': '请使用GET请求!'}
+
+博客详情:# http://127.0.0.1:8000/v1/community/detail?blogid=xxx
+	get:	
+	我要:
+	查询字符串:blogid
+	我给:JsonResponse{'code':200,'data':{'id': id,
+				            'user_me': user_me,
+				            'username': username,
+				            'title': title,
+				            'tag_name': tag_name,
+				            'content': content,
+					    'crete_time':create_time,
+				            'like_count': like_count,
+				            'forward_count': forward_count,
+				            'collect_count': collect_count,
+				            'comment_count': comment_count,
+					    'comment_details':comment_details(和你的评论结构完全一样)}}
+	delete请求:JsonResponse{'code': 200, 'username': userme}
+	错误:response{'code': 30108, 'error': '博客id有误!'}
+	     response{'code': 30107, 'error': '请使用GET请求!'}
+
+转发按钮:http://127.0.0.1:8000/v1/community/forward?authorname=xxx
+	get:错误:jsonresponse{'code': 30109, 'error': '请给我POST请求!'}
+	post:我要:
+	查询字符串:authorname
+	post表单:content(转发内容)      id(博客id)
+	错误:response{'code': 30101, 'error': '非本人操作!'}
+
+点赞和取消http://127.0.0.1:8000/v1/community/like?authorname=xxx&blogid=xxx
+	  http://127.0.0.1:8000/v1/community/unlike?authorname=xxx&blogid=xxx
+	我要:查询字符串:authorname=xxx&blogid=xxx
+	我给:{'code': 200, 'username': author}
+	错误:{'code': 30101, 'error': '非本人操作!'}
 	
 
-
-
-
-
-
-更新版本:
-git add 文件名
-git commit -m '说明'
-git log   查看版本
-回退版本:
-git reset --hard 版本号
-查看工作状态:
-git status
-丢弃改动:
-git checkout -- 文件名
-取消暂存记录:
-git reset HEAD 文件名
-对比和HEAD的更改:
-git diff HEAD -- 文件名
-删除文件:
-git rm 文件名
-
-创建并切换到该分支:
-git branch 分知名
-git checkout -b 分支名
-合并分支:
-git merge 分支名
