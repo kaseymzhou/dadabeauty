@@ -1,0 +1,44 @@
+发表博客:post:我要:
+	1.查询字符串:author_name
+	2.post:json{'title':title,'content':content,'tag':tag}
+	我给:jsonresponse{'code':200,'username': author.username}
+	错误:jsonresponse{'code': 30101, 'error': '非本人操作!'}
+	     jsonresponse{'code': 30102, 'error': 'tag不得为空!'}
+	     jsonresponse{'code': 30103, 'error': 'title不得为空!'}
+	     jsonresponse{'code': 30104, 'error': 'content不得为空!'}
+	get:我要:
+	1.查询字符串:author_name
+	我给:jsonresponse{'code': 200, 'username': author.username}
+	错误:jsonresponse{'code': 30105, 'error': '用户不存在!'}
+
+博客主页:get:我要:
+	1.查询字符串
+	
+
+
+
+
+
+
+更新版本:
+git add 文件名
+git commit -m '说明'
+git log   查看版本
+回退版本:
+git reset --hard 版本号
+查看工作状态:
+git status
+丢弃改动:
+git checkout -- 文件名
+取消暂存记录:
+git reset HEAD 文件名
+对比和HEAD的更改:
+git diff HEAD -- 文件名
+删除文件:
+git rm 文件名
+
+创建并切换到该分支:
+git branch 分知名
+git checkout -b 分支名
+合并分支:
+git merge 分支名
