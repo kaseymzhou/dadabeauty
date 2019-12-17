@@ -62,7 +62,7 @@ def index(request):
     # http://127.0.0.1:8000/v1/community/index?tag=xxx  访问tag标签博客
     if request.method == 'GET':
         user_me = request.myuser
-        tag = request.GET.get('tag')
+        tag = request.GET.get('tag_name')
         if not tag:
             blog_list = Blog.objects.order_by('create_time')
             for item in blog_list:
@@ -72,6 +72,7 @@ def index(request):
                     title = item['title']
                     tag_name = item.tag.tag_name
                     content = item['content']
+                    create_time = item['create_time']
                     like_count_exist = r.hexists('like:comment', id)
                     if like_count_exist:
                         like_count = r.hget('like:comment', id)
@@ -98,6 +99,7 @@ def index(request):
                             'title': title,
                             'tag_name': tag_name,
                             'content': content,
+                            'crete_time':create_time,
                             'like_count': like_count,
                             'forward_count': forward_count,
                             'collect_count': collect_count,
@@ -120,6 +122,7 @@ def index(request):
                         title = item['title']
                         tag_name = item.tag.tag_name
                         content = item['content']
+                        create_time = item['create_time']
                         like_count_exist = r.hexists('like:comment', id)
                         if like_count_exist:
                             like_count = r.hget('like:comment', id)
@@ -146,6 +149,7 @@ def index(request):
                                 'title': title,
                                 'tag_name': tag_name,
                                 'content': content,
+                                'crete_time': create_time,
                                 'like_count': like_count,
                                 'forward_count': forward_count,
                                 'collect_count': collect_count,
@@ -173,6 +177,7 @@ def my_index(request):
                 title = item['title']
                 tag_name = item.tag.tag_name
                 content = item['content']
+                create_time = item['create_time']
                 like_count_exist = r.hexists('like:comment', id)
                 if like_count_exist:
                     like_count = r.hget('like:comment', id)
@@ -199,6 +204,7 @@ def my_index(request):
                         'title': title,
                         'tag_name': tag_name,
                         'content': content,
+                        'crete_time': create_time,
                         'like_count': like_count,
                         'forward_count': forward_count,
                         'collect_count': collect_count,
@@ -216,7 +222,12 @@ def my_index_forward(request):
     # http://127.0.0.1:8000/v1/community/index_forward?authorname=xxx  访问特定人的博客主页
     if request.method == 'GET':
         authorname = request.GET.get('authorname')
-        author = UserProfile.objects.get(username=authorname)
+        try:
+            author = UserProfile.objects.get(username=authorname)
+        except Exception as e:
+            print(e)
+            result = {'code': 30110, 'error': '该用户不存在!'}
+            return JsonResponse(result)
         user_me = request.myuser
         forward_list = author.forward_set.order_by('create_time')
         for item in forward_list:
@@ -251,7 +262,7 @@ def detail_blog(request):
         return JsonResponse(result)
 
     if request.method == 'DELETE':
-        # http://127.0.0.1:8000/v1/community/index?blogid=xxx
+        # http://127.0.0.1:8000/v1/community/detail?blogid=xxx
         try:
             blog = Blog.objects.get(id=id)
             blog.is_active = False
@@ -264,7 +275,7 @@ def detail_blog(request):
         return JsonResponse(result)
 
     if request.method == 'GET':
-        # http://127.0.0.1:8000/v1/community/index?blogid=xxx
+        # http://127.0.0.1:8000/v1/community/detail?blogid=xxx
         try:
             blog = Blog.objects.get(id=id)
             blog.is_active = False
@@ -277,6 +288,7 @@ def detail_blog(request):
         title = blog['title']
         tag_name = blog.tag.tag_name
         content = blog['content']
+        create_time = blog['create_time']
         like_count_exist = r.hexists('like:comment', id)
         if like_count_exist:
             like_count = r.hget('like:comment', id)
@@ -302,6 +314,7 @@ def detail_blog(request):
                 'title': title,
                 'tag_name': tag_name,
                 'content': content,
+                'crete_time': create_time,
                 'like_count': like_count,
                 'forward_count': forward_count,
                 'collect_count': collect_count,
@@ -318,8 +331,8 @@ def forward_blog(request):
         return JsonResponse(result)
 
     if request.method == 'POST':
-        # http://127.0.0.1:8000/v1/community/forward_blog?authorname=xxx
-        author_name = request.GET.get(', authorname')
+        # http://127.0.0.1:8000/v1/community/forward?authorname=xxx
+        author_name = request.GET.get('authorname')
         author = request.myuser
         if author.username != author_name:
             result = {'code': 30101, 'error': '非本人操作!'}
@@ -335,3 +348,77 @@ def forward_blog(request):
         if forward_count_exist is False:
             r.hset('forward:comment', blog_id, 0)
         r.hincrby('forward:comment', blog_id, 1)
+        result = {'code': 200, 'username': author}
+        return JsonResponse(result)
+
+@logging_check
+def like_blog(request):
+    if request.method == 'POST':
+        result = {'code': 30107, 'error': '请使用GET请求!'}
+        return JsonResponse(result)
+
+    if request.method == 'GET':
+        # http://127.0.0.1:8000/v1/community/like?authorname=xxx&blogid=xxx
+        author_name = request.GET.get('authorname')
+        author = request.myuser
+        if author.username != author_name:
+            result = {'code': 30101, 'error': '非本人操作!'}
+            return JsonResponse(result)
+        blog_id=request.GET.get('blogid')
+        # 统计转发数
+        like_count_exist = r.hexists('like:comment', blog_id)
+        if like_count_exist is False:
+            r.hset('like:comment', blog_id, 0)
+        r.hincrby('like:comment', blog_id, 1)
+        result = {'code': 200, 'username': author}
+        return JsonResponse(result)
+
+@logging_check
+def unlike(request):
+    if request.method == 'POST':
+        result = {'code': 30107, 'error': '请使用GET请求!'}
+        return JsonResponse(result)
+
+    if request.method == 'GET':
+        # http://127.0.0.1:8000/v1/community/unlike?authorname=xxx&blogid=xxx
+        author_name = request.GET.get('authorname')
+        author = request.myuser
+        if author.username != author_name:
+            result = {'code': 30101, 'error': '非本人操作!'}
+            return JsonResponse(result)
+        blog_id=request.GET.get('blogid')
+        # 统计转发数
+        like_count_exist = r.hexists('like:comment', blog_id)
+        if like_count_exist is False:
+            r.hset('like:comment', blog_id, 0)
+        r.hincrby('like:comment', blog_id, -1)
+        result = {'code': 200, 'username': author}
+        return JsonResponse(result)
+
+@logging_check
+def reply_blog(request):
+    if request.method == 'GET':
+        result = {'code': 30109, 'error': '请给我POST请求!'}
+        return JsonResponse(result)
+
+    if request.method == 'POST':
+        # http://127.0.0.1:8000/v1/community/forward?authorname=xxx
+        author_name = request.GET.get('authorname')
+        author = request.myuser
+        if author.username != author_name:
+            result = {'code': 30101, 'error': '非本人操作!'}
+            return JsonResponse(result)
+        json_str = request.body
+        json_obj = json.loads(json_str)
+        content = json_obj.get('content')
+        blog_id = json_obj.get('id')
+        blog_object = Blog.objects.get(id=blog_id)
+        Forward.objects.create(content=content, uid=author, b_id=blog_object)
+        # 统计转发数
+        forward_count_exist = r.hexists('forward:comment', blog_id)
+        if forward_count_exist is False:
+            r.hset('forward:comment', blog_id, 0)
+        r.hincrby('forward:comment', blog_id, 1)
+        result = {'code': 200, 'username': author}
+        return JsonResponse(result)
+
