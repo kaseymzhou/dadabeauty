@@ -381,7 +381,7 @@ class Users(View):
         r.set('email_active_%s' % (username), code_str)
         active_url = 'http://127.0.0.1:7001/dadabeauty/active.html?code=%s' % (code_str_bs.decode())
         send_active_email.delay(email, active_url)
-        return JsonResponse({'code': 200, 'username': username, 'data': {'token': token.decode()}})
+        return JsonResponse({'code': 200, 'username': username, 'uid':create_uid,'data': {'token': token.decode()}})
 
 # 发送激活邮件函数
 def send_active_mail(email, code_url):
@@ -604,7 +604,7 @@ class FurtherInfoView(View):
             user.description = description
             user.save()
             #3.更新
-            profile_image_url = '/static/upload_profile/%s' % a_profile.name
+            profile_image_url = '/static/upload_profile/%s' %a_profile.name
             result = {'uid':uid,'profile_image_url':profile_image_url,'description':description}
             return JsonResponse({'code':200,'data':result})
 

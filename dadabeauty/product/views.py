@@ -177,21 +177,22 @@ class ProductsDetailView(View):
                                                 'comment_user_profile' : comment_user_profile,
                                                 'comment_content' : comment_content,
                                                 'comment_replies' : [
-                                                                    {'comment_reply_1' : {
-                                                                                        'reply_username' : reply_username,
-                                                                                        'reply_profile' : reply_profile,
-                                                                                        'reply_content' : reply_content
-                                                                                         },
-                                                                    {'comment_reply_2' : {
-                                                                                        'reply_username' : reply_username,
-                                                                                        'reply_profile' : reply_profile,
-                                                                                        'reply_content' : reply_content
-                                                                                         },
-                                                                    {'comment_reply_3' : {
-                                                                                        'reply_username' : reply_username,
-                                                                                        'reply_profile' : reply_profile,
-                                                                                        'reply_content' : reply_content
-                                                                                         }
+                                                                    {
+                                                                        'reply_username' : reply_username,
+                                                                        'reply_profile' : reply_profile,
+                                                                        'reply_content' : reply_content
+                                                                         ,
+                                                                    {
+                                                                        'reply_username' : reply_username,
+                                                                        'reply_profile' : reply_profile,
+                                                                        'reply_content' : reply_content
+                                                                         ,
+                                                                    {
+                                                                        'reply_username' : reply_username,
+                                                                        'reply_profile' : reply_profile,
+                                                                        'reply_content' : reply_content
+                                                                    }
+                                                                         
 
                                                                     ]
 
@@ -227,7 +228,6 @@ class ProductsDetailView(View):
                 i = 1
 
                 for item in replies:
-                    one_reply_info = {}
                     one_reply_info_detail = {}
                     users = UserProfile.objects.filter(id=item.uid)
                     reply_username = users[0].username
@@ -236,8 +236,7 @@ class ProductsDetailView(View):
                     one_reply_info_detail['reply_username'] = reply_username
                     one_reply_info_detail['reply_profile'] = reply_profile
                     one_reply_info_detail['reply_content'] = reply_content
-                    one_reply_info['comment_reply_%s'%(i)] = one_reply_info_detail
-                    replies_dic.append(one_reply_info['comment_reply_%s'%(i)])
+                    replies_dic.append(one_reply_info_detail)
                     i += 1
                 one_comment_info['comment_replies'] = replies_dic
                 per_comment_detail_dic.append(one_comment_info)
