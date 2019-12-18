@@ -2,6 +2,9 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
+    #test http://127.0.0.1:8000/v1/user/test
+    url(r'^/test$',views.Test.as_view()),
+
     # 用户注册 http://127.0.0.1:8000/v1/user
     url(r'^$',views.Users.as_view()),
 
@@ -24,8 +27,11 @@ urlpatterns = [
     # http://127.0.0.1:8000/v1/user/interested
     url(r'^/interested$',views.InterestedChoiceView.as_view()),
 
-    # http://127.0.0.1:8000/v1/user/further_info
-    url(r'^/further_info',views.FurtherInfoView.as_view()),
+    # http://127.0.0.1:8000/v1/user/uid/profile_img
+    url(r'/(\d+)/profile_img',views.ProfileImg.as_view()),
+
+    # http://127.0.0.1:8000/v1/user/person_description
+    url(r'/person_description',views.PersonDescription.as_view()),
 
     # http://127.0.0.1:8000/v1/user/fan
     url(r'^/fan',views.FanView.as_view()),
@@ -49,7 +55,7 @@ urlpatterns = [
     url(r'^/personalinfo/(\d+)$',views.ChangePersonalInfo.as_view()),
 
     # http://127.0.0.1:8000/v1/user/password
-    url(r'^/password$',views.ChangePassword.as_view())
+    url(r'^/password$',views.ChangePassword.as_view()),
 
 
 

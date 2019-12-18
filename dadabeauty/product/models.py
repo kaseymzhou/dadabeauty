@@ -66,7 +66,7 @@ class Source(models.Model):
 class Sku(models.Model):
     name = models.CharField('sku名字',max_length=100)
     spu_id = models.ForeignKey(Spu)
-    default_img_url = models.ImageField('sku图片')
+    default_img_url = models.URLField('sku图片')
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
 
@@ -116,7 +116,7 @@ class Sale_attr_val(models.Model):
         return 'id :%s; Sale_attr_val:%s' % (self.id, self.val)
 
 class Sku_img(models.Model):
-    img_url = models.ImageField('sku图片')
+    img_url = models.URLField('sku图片')
     sku_id = models.ForeignKey(Sku)
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
@@ -168,15 +168,6 @@ class Collect(models.Model):
     def __str__(self):
         return 'id :%s' % (self.id)
 
-class Tag(models.Model):
-    name = models.CharField('商品标签名字',max_length=50)
-    sku_id = models.ForeignKey(Sku)
-    created_time = models.DateTimeField(auto_now_add=True)
-    updated_time = models.DateTimeField(auto_now=True)
-    class Meta:
-        db_table = 'ptag'
-    def __str__(self):
-        return 'id :%s; name:%s' % (self.id,self.name)
 
 class LikeProduct(models.Model):
     uid = models.ForeignKey(UserProfile)

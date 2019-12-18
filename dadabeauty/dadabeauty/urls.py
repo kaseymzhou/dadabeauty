@@ -16,6 +16,8 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from . import views
+from django.views.static import serve
+from dadabeauty import settings
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -29,5 +31,7 @@ urlpatterns = [
     url(r'^v1/community',include('community.urls')),
     # http://127.0.0.1:8000/v1/dtoken
     url(r'v1/dtoken',include('dtoken.urls')),
+    # 图片访问路径
+    url(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT})
 
 ]

@@ -25,6 +25,7 @@ def tokens(request):
         return JsonResponse(result)
     user = user[0]
     uid = user.id
+    img = settings.PIC_URL + str(user.profile_image_url)
     print(user)
     m = hashlib.md5()
     m.update(password.encode())
@@ -33,7 +34,7 @@ def tokens(request):
         return JsonResponse(result)
     # 生成token
     token = make_token(username)
-    result = {'code':200,'username':username,'uid':uid,'data':{'token':token.decode()}}
+    result = {'code':200,'username':username,'uid':uid,'img':img,'data':{'token':token.decode()}}
     return JsonResponse(result)
 
 

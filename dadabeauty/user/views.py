@@ -24,6 +24,11 @@ from product.models import *
 
 r = redis.Redis(host='127.0.0.1',port=6379,db=0)
 
+#test
+class Test(View):
+    def post(self,request):
+        return JsonResponse({'code':200})
+
 # 用户个人主页展示
 class PersonalIndex(View):
     @logging_check
@@ -560,53 +565,47 @@ class InterestedChoiceView(View):
         if not data:
             result = {'code': '10109', 'error': '请提供感兴趣的方面'}
             return JsonResponse(result)
-        json_obj = json.loads(data) # {'uid':'01','interests':'1,2,5'}
-        intesters_all = json_obj.get('interests') #'1,2,5'
+        json_obj = json.loads(data) # {'uid':'01','interests':['1,2,5']}
+        intesters_all = json_obj.get('interests') #['1,2,5']
         uid = json_obj.get('uid')
-        interests_list = intesters_all.split(',') #['1','2','5']
-        user_interests_list = []
-        for i in range(len(interests_list)):
-            interest = Interests_User.objects.create(uid=uid,iid=interests_list[i])
-            user_interests_list.append(Interests.objects.filter(id=i).field)
-        # 向前端返回数据 例子{'code':200,'data':{'id':1,'user_interests_list':'小清新风','欧美妆容'}}
-        result = {'code':200,'data':{'id':uid,'user_interests_list':user_interests_list}}
+        print(intesters_all)
+        for item in intesters_all:
+            user = UserProfile.objects.filter(id=uid)
+            interest = Interests.objects.filter(id=item)
+            Interests_User.objects.create(uid=user[0], iid=interest[0])
+        # 向前端返回数据 例子{'code':200,'data':{'id':1}
+        result = {'code':200,'data':{'id':uid}}
         return JsonResponse(result)
 
-# 设置头像与个性签名
-class FurtherInfoView(View):
+# 设置头像
+class ProfileImg(View):
     @logging_check
-    def get(self,request):
-        return JsonResponse({'code':200})
+    def post(self,request,uid):
+        user = UserProfile.objects.filter(id=uid)
+        user = user[0]
+        user.profile_image_url = request.FILES['myfile']
+        user.save()
+        img = settings.PIC_URL+str(user.profile_image_url)
+        print(img)
+        return JsonResponse({'code':200,'uid':uid,'img':img})
+
+# 设置个性签名
+class PersonDescription(View):
     @logging_check
-    def post(self, request):
-        try:
-            a_profile = request.FILES['myfile']
-            filename =os.path.join(settings.MEDIA_ROOT,a_profile.name)
-            with open(filename, 'wb') as f:
-                data = a_profile.file.read()
-                f.write(data)
-        except Exception as e:
-            raise Http404
+    def post(self,request):
         data = request.body
-        json_obj = json.loads(data)
-        uid = json_obj.get('uid')
-        description = json_obj.get('description')
         if not data:
-            return JsonResponse({'code':10111,'error':"请上传头像和个性签名"})
-        else:
-            # 1.查
-            user = UserProfile.objects.filter(id=uid)
-            if not user:
-                return JsonResponse({'code':10112,'error':'not found the user'})
-            user=user[0]
-            # 2.改
-            user.profile_image_url = '/static/upload_profile/%s'%a_profile.name
-            user.description = description
-            user.save()
-            #3.更新
-            profile_image_url = '/static/upload_profile/%s' %a_profile.name
-            result = {'uid':uid,'profile_image_url':profile_image_url,'description':description}
-            return JsonResponse({'code':200,'data':result})
+            result = {'code': '10141', 'error': '请填写个性签名'}
+            return JsonResponse(result)
+        json_obj = json.loads(data)
+        description = json_obj.get('description')
+        uid = json_obj.get('uid')
+        user = UserProfile.objects.filter(id=uid)
+        user = user[0]
+        user.description = description
+        user.save()
+        return JsonResponse({'code':200,'uid':uid})
+
 
 # 关注用户
 class FanView(View):
