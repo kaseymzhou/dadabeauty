@@ -27,7 +27,7 @@
 				            'forward_count': forward_count,
 				            'collect_count': collect_count,
 				            'comment_count': comment_count,
-					    'comments': comments  # 列表}}
+					    'comments': comments  # 列表{'comments':[{username:'',comment:''}]}
 	错误:jsonresponse{'code': 30106, 'error': '这个标签不存在 !'}
 	     jsonresponse{'code': 30107, 'error': '请使用GET请求!'}
 
@@ -45,7 +45,7 @@
 				            'forward_count': forward_count,
 				            'collect_count': collect_count,
 				            'comment_count': comment_count,
-					    'comments': comments  # 列表}}
+					    'comments': comments  # 列表{'comments':[{username:'',comment:''}]}
 	错误:jsonresponse{'code': 30110, 'error': '该用户不存在!'}
 	     jsonresponse{'code': 30107, 'error': '请使用GET请求!'}
 
@@ -75,11 +75,38 @@
 	查询字符串:authorname
 	post表单:content(转发内容)      id(博客id)
 	错误:response{'code': 30101, 'error': '非本人操作!'}
+	我给:result = {'code': 200, 'username': author}
 
 点赞和取消http://127.0.0.1:8000/v1/community/like?authorname=xxx&blogid=xxx
 	  http://127.0.0.1:8000/v1/community/unlike?authorname=xxx&blogid=xxx
 	我要:查询字符串:authorname=xxx&blogid=xxx
 	我给:{'code': 200, 'username': author}
 	错误:{'code': 30101, 'error': '非本人操作!'}
-	
+
+收藏:http://127.0.0.1:8000/v1/community/collect?authorname=xxx
+	post:错误:jsonresponse{'code': 30117, 'error': '请给我GET请求!'}
+	get:我要:
+	查询字符串:authorname id(博客id)
+	错误:response{'code': 30101, 'error': '非本人操作!'}
+	我给:result = {'code': 200, 'username': author}
+
+评论:http://127.0.0.1:8000/v1/community/comment
+	post:我要:post表单:blog_id    content   uid
+		我给:{'code': 200, 'data': '评论成功'}
+		错误:result = {'code': '30111', 'error': '请填写评论'}
+	delete:我要:comment_id
+		我给:{'code': 200, 'data': '删除评论成功'}
+		错误:result = {'code': '30112', 'error': '删除失败'}
+				{'code': '30113', 'error': '无法删除该评论'}
+
+回复:http://127.0.0.1:8000/v1/community/reply
+	post:我要:post表单:content   uid   c_id
+		我给:result = {'code': 200, 'data': '回复成功'}
+		错误:result = {'code': '30114', 'error': '请填写回复信息'}
+	delete:我要:reply_id
+		我给:{'code': 200, 'data': '删除回复成功'}
+		错误:result = {'code': '30115', 'error': '删除失败'}
+				JsonResponse({'code': 30116, 'error': '无法删除该回复'}
+
+
 

@@ -2,7 +2,7 @@ import redis
 from django.http import JsonResponse
 
 # Create your views here.
-from community.models import Blog, Tag, Forward, Comment, Reply
+from community.models import Blog, Tag, Forward, Comment, Reply, Collect
 from tools.logging_check import logging_check
 import json
 
@@ -93,6 +93,10 @@ def index(request):
                 else:
                     comment_count = 0
                 comments = Comment.objects.filter(b_id=id, isActive=True)
+                comment = {}
+                for item in comments:
+                    comment['uid'] = item.userprofile.username
+                    comment['comment'] = item['comment']
                 data = {'id': id,
                         'user_me': user_me,
                         'username': username,
@@ -104,7 +108,7 @@ def index(request):
                         'forward_count': forward_count,
                         'collect_count': collect_count,
                         'comment_count': comment_count,
-                        'comments': comments  # 列表
+                        'comments': comments  # 列表{'comments':[{username:'',comment:''}]}
                         }
                 result = {'code': 200, 'data': data}
                 return JsonResponse(result)
@@ -143,6 +147,10 @@ def index(request):
                 else:
                     comment_count = 0
                 comments = Comment.objects.filter(b_id=id, isActive=True)
+                comment = {}
+                for item in comments:
+                    comment['uid'] = item.userprofile.username
+                    comment['comment'] = item['comment']
                 data = {'id': id,
                         'user_me': user_me,
                         'username': username,
@@ -154,7 +162,7 @@ def index(request):
                         'forward_count': forward_count,
                         'collect_count': collect_count,
                         'comment_count': comment_count,
-                        'comments': comments  # 列表
+                        'comments': comments  # 列表{'comments':[{username:'',comment:''}]}
                         }
                 result = {'code': 200, 'data': data}
                 return JsonResponse(result)
@@ -199,6 +207,10 @@ def my_index(request):
             else:
                 comment_count = 0
             comments = Comment.objects.filter(b_id=id, isActive=True)
+            comment = {}
+            for item in comments:
+                comment['uid'] = item.userprofile.username
+                comment['comment'] = item['comment']
             data = {'id': id,
                     'user_me': user_me,
                     'username': username,
@@ -210,7 +222,7 @@ def my_index(request):
                     'forward_count': forward_count,
                     'collect_count': collect_count,
                     'comment_count': comment_count,
-                    'comments': comments  # 列表
+                    'comments': comments  # 列表{'comments':[{username:'',comment:''}]}
                     }
             result = {'code': 200, 'data': data}
             return JsonResponse(result)
@@ -240,6 +252,10 @@ def my_index_forward(request):
             content = item['content']
             blog_content = item.blog.content
             comments = Comment.objects.filter(b_id=id, isActive=True)
+            comment = {}
+            for item in comments:
+                comment['uid'] = item.userprofile.username
+                comment['comment'] = item['comment']
             data = {'id': id,
                     'user_me': user_me,
                     'username': username,
@@ -247,7 +263,7 @@ def my_index_forward(request):
                     'tag_name': tag_name,
                     'content': content,
                     'blog_content': blog_content,
-                    'comments': comments  # 列表
+                    'comments': comments  # 列表{'comments':[{username:'',comment:''}]}
                     }
             result = {'code': 200, 'data': data}
             return JsonResponse(result)
@@ -387,10 +403,10 @@ def forward_blog(request):
         blog_object = Blog.objects.get(id=blog_id)
         Forward.objects.create(content=content, uid=author, b_id=blog_object)
         # 统计转发数
-        forward_count_exist = r.hexists('forward:comment', blog_id)
+        forward_count_exist = r.hexists('forward:count', blog_id)
         if forward_count_exist is False:
-            r.hset('forward:comment', blog_id, 0)
-        r.hincrby('forward:comment', blog_id, 1)
+            r.hset('forward:count', blog_id, 0)
+        r.hincrby('forward:count', blog_id, 1)
         result = {'code': 200, 'username': author}
         return JsonResponse(result)
 
@@ -410,10 +426,10 @@ def like_blog(request):
             return JsonResponse(result)
         blog_id = request.GET.get('blogid')
         # 统计转发数
-        like_count_exist = r.hexists('like:comment', blog_id)
+        like_count_exist = r.hexists('like:count', blog_id)
         if like_count_exist is False:
-            r.hset('like:comment', blog_id, 0)
-        r.hincrby('like:comment', blog_id, 1)
+            r.hset('like:count', blog_id, 0)
+        r.hincrby('like:count', blog_id, 1)
         result = {'code': 200, 'username': author}
         return JsonResponse(result)
 
@@ -433,10 +449,10 @@ def unlike(request):
             return JsonResponse(result)
         blog_id = request.GET.get('blogid')
         # 统计转发数
-        like_count_exist = r.hexists('like:comment', blog_id)
+        like_count_exist = r.hexists('like:count', blog_id)
         if like_count_exist is False:
-            r.hset('like:comment', blog_id, 0)
-        r.hincrby('like:comment', blog_id, -1)
+            r.hset('like:count', blog_id, 0)
+        r.hincrby('like:count', blog_id, -1)
         result = {'code': 200, 'username': author}
         return JsonResponse(result)
 
@@ -514,4 +530,29 @@ def reply(request):
         reply.isActive = False
         reply.save()
         result = {'code': 200, 'data': '删除回复成功'}
+        return JsonResponse(result)
+
+
+@logging_check
+def collect_blog(request):
+    if request.method == 'POST':
+        result = {'code': 30117, 'error': '请给我GET请求!'}
+        return JsonResponse(result)
+
+    if request.method == 'GET':
+        # http://127.0.0.1:8000/v1/community/collect?authorname=xxx,id=xxx
+        author_name = request.GET.get('authorname')
+        author = request.myuser
+        if author.username != author_name:
+            result = {'code': 30101, 'error': '非本人操作!'}
+            return JsonResponse(result)
+        blog_id = request.GET.get('id')
+        blog_object = Blog.objects.get(id=blog_id)
+        Collect.objects.create(uid=author, b_id=blog_object)
+        # 统计收藏数
+        collect_count_exist = r.hexists('collect_count', blog_id)
+        if collect_count_exist is False:
+            r.hset('collect_count', blog_id, 0)
+        r.hincrby('collect_count', blog_id, 1)
+        result = {'code': 200, 'username': author}
         return JsonResponse(result)

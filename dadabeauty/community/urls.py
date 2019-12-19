@@ -11,4 +11,7 @@ urlpatterns = [
     url(r'^forward$',views.forward_blog),
     url(r'^like$',views.like_blog),
     url(r'^unlike$',views.unlike),
+    url(r'^comment$',views.comment),
+    url(r'^reply$',views.reply),
+    url(r'^collect$',views.collect_blog),
 ]
