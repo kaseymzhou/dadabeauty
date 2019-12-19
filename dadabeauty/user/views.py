@@ -60,10 +60,8 @@ class PersonalIndex(View):
         all_blog_list = Blog.objects.filter(uid=uid,isActive=True).order_by('-updated_time')
         if not all_blog_list:
             return JsonResponse({'code':10114,'data':'您还未发表文章'})
-        # 只取前三篇
-        blog3_list = all_blog_list[:3]
         blogs_list = []
-        for item in blog3_list:
+        for item in all_blog_list:
             per_blog_info_dic ={}
             per_blog_info_dic['title']=item.title
             per_blog_info_dic['content']=item.content
@@ -604,7 +602,7 @@ class PersonDescription(View):
         user = user[0]
         user.description = description
         user.save()
-        return JsonResponse({'code':200,'uid':uid})
+        return JsonResponse({'code':200,'uid':uid,'person_description':description})
 
 
 # 关注用户

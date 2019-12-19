@@ -12,18 +12,15 @@ class GoodsCatalogManager(admin.ModelAdmin):
 # 注册管理类
 admin.site.register(models.GoodsCatalog,GoodsCatalogManager)
 
-
 class GoodsSubclassManager(admin.ModelAdmin):
     list_display = ['id','name','gc_id','created_time','updated_time']
     list_display_links = ['id']
 admin.site.register(models.GoodsSubclass,GoodsSubclassManager)
 
-
 class BrandManager(admin.ModelAdmin):
     list_display = ['id','name','logo_url','created_time','updated_time']
     list_display_links = ['id']
 admin.site.register(models.Brand,BrandManager)
-
 
 class SpuManager(admin.ModelAdmin):
     list_display = ['id','name','sb_id','br_id','created_time','updated_time']
@@ -35,4 +32,27 @@ class SourceManager(admin.ModelAdmin):
     list_display_links = ['id']
 admin.site.register(models.Source,SourceManager)
 
+class SkuManager(admin.ModelAdmin):
+    list_display = ['id',
+                    'name',
+                    'spu_id',
+                    'source_id',
+                    'default_img_url',
+                    'feature','price',
+                    'discount_price',
+                    'source_url',
+                    'created_time',
+                    'updated_time']
+    list_display_links = ['id']
+admin.site.register(models.Sku, SkuManager)
+
+class Sale_attr_valManager(admin.ModelAdmin):
+    list_display = ['id','val','sale_attr_id','sku_id','created_time','updated_time']
+    list_display_link = ['id']
+admin.site.register(models.Sale_attr_val,Sale_attr_valManager)
+
+class Sale_attrManager(admin.ModelAdmin):
+    list_display = ['id','attr_name','spu_id','created_time','updated_time']
+    list_display_links = ['id']
+admin.site.register(models.Sale_attr,Sale_attrManager)
 

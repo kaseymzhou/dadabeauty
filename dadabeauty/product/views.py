@@ -48,13 +48,16 @@ class IndexShow(View):
                 product_dic['id'] = sku_info.id
                 product_dic['name'] = sku_info.name
                 product_dic['url'] = sku_info.default_img_url
+                product_dic['source']=sku_info.source_id.name
                 product_dic['like'] = item[1]
-            product_info.append(product_dic)
+                product_info.append(product_dic)
             r.set("index_cache",product_info,ex=600)
+            redis_index = r.get('index_cache')
+            index_data = json.loads(redis_index)
         else:
             print("使用缓存")
             index_data = json.loads(redis_index)
-        result = {"code": 200, "data": index_data, "base_url": settings.PIC_URL}
+        result = {"code": 200, "data": index_data}
 
         return JsonResponse(result)
 
@@ -88,11 +91,14 @@ class ProductsListView(View):
                 sku_dict['skuid'] = sku.id
                 sku_dict['name'] = sku.name
                 sku_dict['image'] = str(sku.default_image_url)
+                sku_dict['source']=sku.source_id.name
                 page_skus_json.append(sku_dict)
         except:
             result = {'code': 40200, 'error': '页数有误，小于0或者大于总页数'}
             return JsonResponse(result)
-        result = {'code': 200, 'data': page_skus_json, 'paginator': {'pagesize': page_size, 'total': len(sku_list)},
+        result = {'code': 200,
+                  'data': page_skus_json,
+                  'paginator': {'pagesize': page_size, 'total': len(sku_list)},
                   'base_url': settings.PIC_URL}
         return JsonResponse(result)
 
@@ -117,52 +123,49 @@ class ProductsDetailView(View):
             print("未使用缓存")
             """
             返回给前端的商品信息数据结构
-            sku_details = {'name':name, 'spu':spu, 'img'=img,
-                             {'diff':[source:price,source:price,source:price]},
-                             {Sale_attr_name:[val_id:val,val_id:val,val_id:val]}
-                             'comment_details':comment_details}
+            sku_details = {'name':name, 
+                           'img':img,
+                           'price':price,
+                           'source':source,
+                           'discount_price':price,
+                           'like_count':like_count,
+                           'url':url,
+                           'feature':feature
+                           'sale_attr':[{'name':name,'val':val},{'name':name,'val':val}],
+                           'comment_details':comment_details
+                            }
                              
             """
             try:
                 sku_item = Sku.objects.get(id=sku_id)
-                sku_source_item = Sku_source.objects.filter(sku_id=sku_id)
             except:
                 # 判断是否有当前sku
                 result = {'code': 30300, 'error': "相关产品不存在", }
                 return JsonResponse(result)
 
-            sku_catalog = sku_item.spu_id.name
             sku_details['image'] = str(sku_item.default_image_url)
-            sku_details["spu"] = sku_item.spu_id.id
+            sku_details["price"] = sku_item.price
             sku_details["name"] = sku_item.name
+            sku_details["discount_price"] = sku_item.discount_price
+            sku_details["source"] = sku_item.source_id.name
+            sku_details['sale_attr'] = []
+            sku_details['url'] = str(sku_item.source_url)
+            sku_details['feature'] = sku_item.feature
+            sku_details['like_count'] = r.hget('product:like', sku_id)
 
-            source_list = []
-            for i in sku_source_item:
-                sku_source_dic = {}
-                sku_source_dic[i.source_id.name]= i.price
-                source_list.append(sku_source_dic)
-                sku_details['diff'] = source_list
+            sale_attr_and_value=[]
+            spu_id = sku_item.spu_id
+            sale_attr_list = Sale_attr.objects.filter(spu_id=spu_id)
+            for sale_attr in sale_attr_list:
+                per_sale_attr_value_dic={}
+                sale_attr_name = sale_attr.attr_name
+                sale_attr_value = Sale_attr_val.objects.filter(sku_id=sku_id,sale_attr_id=sale_attr.id)
+                sale_attr_val=sale_attr_value[0].val
+                per_sale_attr_value_dic['name']=sale_attr_name
+                per_sale_attr_value_dic['value']=sale_attr_val
+                sale_attr_and_value.append(per_sale_attr_value_dic)
+            sku_details['sale_attr']=sale_attr_and_value
 
-            # 详情图片
-            sku_images = Sku_img.objects.filter(sku_id=sku_id)
-            if sku_images:
-                sku_details['detail_image'] = str(sku_images[0].img_url)
-            else:
-                sku_details['detail_image'] = ""
-
-            # 获取sku销售属性名称和sku销售属性值
-            sale_attrs_val_lists = Sale_attr_val.objects.filter(sku=sku_id)
-
-            sale_attr_id = sale_attrs_val_lists[0].sale_attr_id
-            Sale_attr_lists = Sale_attr.objects.filter(id=sale_attr_id)
-            Sale_attr_name = Sale_attr_lists[0].attr_name
-
-            val_id_val_list = []
-            for i in sale_attrs_val_lists:
-                val_dic = {}
-                val_dic[i.id] = i.val
-                val_id_val_list.append(val_dic)
-                sku_details[Sale_attr_name] = val_id_val_list
 
             """
             返回给前端时的评论区数据结构
@@ -192,8 +195,8 @@ class ProductsDetailView(View):
                                                                         'reply_profile' : reply_profile,
                                                                         'reply_content' : reply_content
                                                                     }
-                                                                         
-
+                                                                    ,
+                                                                    ...  
                                                                     ]
 
                                                 },
@@ -246,14 +249,17 @@ class ProductsDetailView(View):
 
         # 写入缓存
             r.setex('index_detail_%s'%sku_id,60*60*24,json.dumps(sku_details))
+            redis_detail = r.get('index_detail_%s' % sku_id)
+            sku_details = json.loads(redis_detail)
+
 
         # 商品详细页评论、回复展示
         else:
             print("使用缓存")
             sku_details = json.loads(redis_detail)
 
-            result = {'code': 200, 'data': sku_details,  'base_url': settings.PIC_URL}
-            return JsonResponse(result)
+        result = {'code': 200, 'data': sku_details,  'base_url': settings.PIC_URL}
+        return JsonResponse(result)
 
 
 # 评论
@@ -356,36 +362,40 @@ class LikeProduct(View):
         json_obj = json.loads(data)
         uid = json_obj.get('uid')
         sku_id = json_obj.get('sku_id')
-        LikeProduct.objects.create(uid=uid,sku_id=sku_id)
 
-        # 判断是否在redis中曾经有设立过计数key
-        sku_like_count = r.hexists('product:like', sku_id)
-        if sku_like_count is False:
-            r.hset('product:like', sku_id, 0)
-        # redis做评论计数
-        r.hincrby('peoducts:like', sku_id, 1)
-        # mysql数据库录入
-        result = {'code':200,'data':'点赞成功'}
-        return JsonResponse(result)
-    @logging_check
-    def delete(self, request):
-        data = request.body
-        if not data:
-            result = {'code': '30107', 'error': '点赞失败'}
+        # 在mysql中根据uid和sku_id查看是否有记录，若没有记录，证明客户动作为点赞，在redis和mysql中记录点赞动作
+        like_record = LikeProduct.objects.filter(uid=uid,sku_id=sku_id)
+        if not like_record:
+            # 判断是否在redis中曾经有设立过计数key
+            sku_like_count = r.hexists('product:like', sku_id)
+            # 还未设立redis key
+            if sku_like_count is False:
+                #设立key
+                r.hset('product:like', sku_id, 0)
+            # redis做评论计数加1
+            r.hincrby('peoducts:like', sku_id, 1)
+                # mysql数据库录入
+            LikeProduct.objects.create(uid=uid, sku_id=sku_id)
+            result = {'code':200,'data':'点赞成功'}
             return JsonResponse(result)
-        json_obj = json.loads(data)
-        like_id = json_obj.get('like_id')
-        likes = LikeProduct.objects.filter(id=like_id)
-        if not likes:
-            return JsonResponse({'code': 30108, 'error': '无法取消点赞'})
-        like = likes[0]
-        like.isActive = False
-        like.save()
-        # redis做评论计数
-        sku_id = like.sku_id
-        r.hincrby('product:like', sku_id, -1)
-        result = {'code': 200, 'data': '取消点赞成功'}
-        return JsonResponse(result)
+        # 有mysql记录，看记录来判断用户进行的是点赞还是取消点赞动作，并进行相反的数据库记录
+        else:
+            like_record=like_record[0]
+            isactive = like_record.isActive
+            # 用户曾经点赞 --> 现在：取消点赞
+            if isactive == True:
+                isactive = False
+                like_record.save()
+                # redis计数减1
+                r.hincrby('product:like', sku_id, -1)
+                return JsonResponse({'code':201,'data':'取消点赞成功'})
+            # 用户曾经取消点赞 --> 现在：重新点赞
+            else:
+                isactive = True
+                like_record.save()
+                # redis计数加1
+                r.hincrby('product:like', sku_id, 1)
+                return JsonResponse({'code':200,'data':'点赞成功'})
 
 # 收藏商品
 class CollectProducts(View):

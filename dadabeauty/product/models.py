@@ -41,7 +41,6 @@ class Spu(models.Model):
     name=models.CharField('spu名字',max_length=100)
     sb_id = models.ForeignKey(GoodsSubclass)
     br_id = models.ForeignKey(Brand)
-
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
 
@@ -66,7 +65,12 @@ class Source(models.Model):
 class Sku(models.Model):
     name = models.CharField('sku名字',max_length=100)
     spu_id = models.ForeignKey(Spu)
-    default_img_url = models.URLField('sku图片')
+    source_id = models.ForeignKey(Source,default='')
+    default_img_url = models.URLField('sku图片',default='')
+    feature = models.CharField(verbose_name='特点',max_length=100,default='')
+    price = models.DecimalField('价格', max_digits=10, decimal_places=2,default=0)
+    discount_price = models.DecimalField('折扣价', max_digits=10, decimal_places=2,default=0)
+    source_url = models.URLField('来源网址',default='')
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
 
@@ -76,19 +80,6 @@ class Sku(models.Model):
     def __str__(self):
         return 'id :%s; sku:%s' % (self.id, self.name)
 
-class Sku_source(models.Model):
-    sku_id = models.ForeignKey(Sku)
-    source_id = models.ForeignKey(Source)
-    price = models.DecimalField('价格',max_digits=10,decimal_places=2)
-    source_url = models.URLField('来源网址')
-    created_time = models.DateTimeField(auto_now_add=True)
-    updated_time = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'psku_source'
-
-    def __str__(self):
-        return 'id :%s; sku_source:%s' % (self.id, self.name)
 
 class Sale_attr(models.Model):
     attr_name = models.CharField('产品属性名',max_length=50)
@@ -114,18 +105,6 @@ class Sale_attr_val(models.Model):
 
     def __str__(self):
         return 'id :%s; Sale_attr_val:%s' % (self.id, self.val)
-
-class Sku_img(models.Model):
-    img_url = models.URLField('sku图片')
-    sku_id = models.ForeignKey(Sku)
-    created_time = models.DateTimeField(auto_now_add=True)
-    updated_time = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'psku_img'
-
-    def __str__(self):
-        return 'id :%s' % (self.id)
 
 class Comment(models.Model):
     content = models.TextField('评论')
