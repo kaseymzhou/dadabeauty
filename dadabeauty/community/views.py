@@ -2,9 +2,11 @@ import redis
 from django.http import JsonResponse
 
 # Create your views here.
-from community.models import Blog, Tag, Forward, Comment, Reply, Collect
+from community.models import Blog, Tag, Forward, Comment, Reply, Collect, Image
+from dadabeauty import settings
 from tools.logging_check import logging_check
 import json
+import hashlib
 
 from user.models import UserProfile
 
@@ -37,8 +39,22 @@ def send_topics(request):
         if not content:
             result = {'code': 30104, 'error': 'content不得为空!'}
             return JsonResponse(result)
+        info = title + content[10]
+        id = hashlib.md5(info.encode()).hexdigest()
         # 创建blog
-        Blog.objects.create(title=title, content=content, uid=author, tid=tag_object)
+        Blog.objects.create(id=id, title=title, content=content, uid=author, tid=tag_object)
+
+        # 添加图片
+
+        blog = Blog.objects.filter(id=id)
+        blog = blog[0]
+        image = Blog.objects.filter(b_id=blog)
+        image = image[0]
+        for i in range(4):
+            image.image = request.FILES['file{}'.format(i)]
+            image.save()
+            img = settings.PIC_URL + str(image.image)
+
         result = {'code': 200, 'username': author.username}
         return JsonResponse(result)
 
@@ -94,9 +110,17 @@ def index(request):
                     comment_count = 0
                 comments = Comment.objects.filter(b_id=id, isActive=True)
                 comment = {}
+                comment_list = []
                 for item in comments:
                     comment['uid'] = item.userprofile.username
                     comment['comment'] = item['comment']
+                    comment_list.append(comment)
+                images = Image.objects.filter(b_id=id)
+                image = {}
+                image_list = []
+                for item in images:
+                    image['url'] = item['image']
+                    image_list.append(image)
                 data = {'id': id,
                         'user_me': user_me,
                         'username': username,
@@ -108,7 +132,8 @@ def index(request):
                         'forward_count': forward_count,
                         'collect_count': collect_count,
                         'comment_count': comment_count,
-                        'comments': comments  # 列表{'comments':[{username:'',comment:''}]}
+                        'image_urls': image_list,  # 列表{'image_urls':[{'url':''}]}
+                        'comments': comment_list  # 列表{'comments':[{'username':'','comment':''}]}
                         }
                 result = {'code': 200, 'data': data}
                 return JsonResponse(result)
@@ -148,9 +173,17 @@ def index(request):
                     comment_count = 0
                 comments = Comment.objects.filter(b_id=id, isActive=True)
                 comment = {}
+                comment_list = []
                 for item in comments:
                     comment['uid'] = item.userprofile.username
                     comment['comment'] = item['comment']
+                    comment_list.append(comment)
+                images = Image.objects.filter(b_id=id)
+                image = {}
+                image_list = []
+                for item in images:
+                    image['url'] = item['image']
+                    image_list.append(image)
                 data = {'id': id,
                         'user_me': user_me,
                         'username': username,
@@ -162,6 +195,7 @@ def index(request):
                         'forward_count': forward_count,
                         'collect_count': collect_count,
                         'comment_count': comment_count,
+                        'image_urls': image_list,  # 列表{'image_urls':[{'url':''}]}
                         'comments': comments  # 列表{'comments':[{username:'',comment:''}]}
                         }
                 result = {'code': 200, 'data': data}
@@ -208,9 +242,17 @@ def my_index(request):
                 comment_count = 0
             comments = Comment.objects.filter(b_id=id, isActive=True)
             comment = {}
+            comment_list = []
             for item in comments:
                 comment['uid'] = item.userprofile.username
                 comment['comment'] = item['comment']
+                comment_list.append(comment)
+            images = Image.objects.filter(b_id=id)
+            image = {}
+            image_list = []
+            for item in images:
+                image['url'] = item['image']
+                image_list.append(image)
             data = {'id': id,
                     'user_me': user_me,
                     'username': username,
@@ -222,6 +264,7 @@ def my_index(request):
                     'forward_count': forward_count,
                     'collect_count': collect_count,
                     'comment_count': comment_count,
+                    'image_urls': image_list,  # 列表{'image_urls':[{'url':''}]}
                     'comments': comments  # 列表{'comments':[{username:'',comment:''}]}
                     }
             result = {'code': 200, 'data': data}
@@ -253,9 +296,17 @@ def my_index_forward(request):
             blog_content = item.blog.content
             comments = Comment.objects.filter(b_id=id, isActive=True)
             comment = {}
+            comment_list = []
             for item in comments:
                 comment['uid'] = item.userprofile.username
                 comment['comment'] = item['comment']
+                comment_list.append(comment)
+            images = Image.objects.filter(b_id=id)
+            image = {}
+            image_list = []
+            for item in images:
+                image['url'] = item['image']
+                image_list.append(image)
             data = {'id': id,
                     'user_me': user_me,
                     'username': username,
@@ -367,6 +418,13 @@ def detail_blog(request):
             per_comment_detail_dic.append(one_comment_info)
         comment_details['per_comment_detail'] = per_comment_detail_dic
 
+        images = Image.objects.filter(b_id=id)
+        image = {}
+        image_list = []
+        for item in images:
+            image['url'] = item['image']
+            image_list.append(image)
+
         data = {'user_me': userme,
                 'username': username,
                 'title': title,
@@ -377,6 +435,7 @@ def detail_blog(request):
                 'forward_count': forward_count,
                 'collect_count': collect_count,
                 'comment_count': comment_count,
+                'image_urls': image_list,  # 列表{'image_urls':[{'url':''}]}
                 'comment_details': comment_details
                 }
         result = {'code': 200, 'data': data}
