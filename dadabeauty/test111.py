@@ -28,9 +28,14 @@ r = redis.Redis(host='127.0.0.1',port=6379,db=7)
 #
 # a = {'A':{'a':2}}
 
-b = {'A':[1,2,3]}
+# b = {'A':[1,2,3]}
+#
+#
+# h = r.hexists("product:buy",1001)
+#
+# print(h is False)
 
-
-h = r.hexists("product:buy",1001)
-
-print(h is False)
+# r.zadd('product_like',{'03':5})
+# r.zincrby('product_like',1,'01')
+# print(r.zscore('product_like','01'))
+print(r.zrevrange('product_like',0,-1,withscores=True))

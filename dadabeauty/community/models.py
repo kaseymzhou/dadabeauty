@@ -11,17 +11,13 @@ class Tag(models.Model):
         db_table = 'ctag'
 
     def __str__(self):
-        return 'tag_name:%s' % (self.tag_name,)
+        return 'tag_name:%s' % (self.tag_name)
 
 
 
 class Blog(models.Model):
     title = models.CharField('标题', max_length=100)
     content = models.TextField(verbose_name='文章内容')
-    like_count = models.IntegerField(default=0,verbose_name='点赞数量')
-    forward_count = models.IntegerField(default=0, verbose_name='转发数量')
-    collect_count = models.IntegerField(default=0, verbose_name='收藏数量')
-    comment_count = models.IntegerField(default=0, verbose_name='评论数量')
     uid = models.ForeignKey(UserProfile)
     tid=models.ForeignKey(Tag)
     is_active = models.BooleanField(default=True, verbose_name='删除与否')
@@ -32,8 +28,7 @@ class Blog(models.Model):
         db_table = 'cblog'
 
     def __str__(self):
-        return 'title:%s content:%s forward_count:%s collect_count:%s comment_count:%s' % (
-        self.title, self.content, self.forward_count, self.collect_count, self.comment_count)
+        return 'title:%s content:%s' % (self.title, self.content)
 
 
 class Image(models.Model):

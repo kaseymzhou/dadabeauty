@@ -8,6 +8,7 @@ import json
 from django.core.paginator import Paginator
 from tools.logging_check import logging_check
 from user.models import *
+from tools.datetimeseri import JsonCustomEncoder
 # Create your views here.
 
 r = redis.Redis(host='127.0.0.1',port=6379,db=2)
@@ -27,31 +28,32 @@ class IndexShow(View):
 
         # 0. 获取所有产品详细内容
         catalog_list = Sku.objects.all()
-        # 1. 建立列表储存点赞前30的sku信息
+        # 1. 建立列表储存点赞前10的sku信息
         redis_index = r.get('index_cache')
         if redis_index is None:
             print("未使用缓存")
-            # 从redis中获取点赞前30的商品信息
-            like_list = r.zrevrange('product:like',0,-1,withscores=True)
-            like_top30_products = like_list[:30]
-            new_like_top30_products = []
+            # 从redis中获取点赞前10的商品信息
+            like_list = r.zrevrange('product:like',0,-1,withscores=True) #[(b'product:1', 5.0), (b'product:2', 2.0), (b'product:3', 1.0)]
+            like_top10_products = like_list[:30]
+            new_like_top10_products = []
             product_info = []
-            for item in like_top30_products:
+            for item in like_top10_products:
                 item = list(item)
                 item[0] = item[0].decode()
-                # new_like_top30_products[[sku(id),点赞数],[sku(id),点赞数],...]
-                new_like_top30_products.append(item)
-            for item in new_like_top30_products:
-                sku_infos = Sku.objects.filter(id=item[0])
+                # new_like_top30_products[['product:sku_id',点赞数],['product:sku_id',点赞数],...]
+                new_like_top10_products.append(item)
+            for item in new_like_top10_products:
+                sku_id = item[0].split(':')[-1]
+                sku_infos = Sku.objects.filter(id=sku_id)
                 sku_info = sku_infos[0]
                 product_dic = {}
-                product_dic['id'] = sku_info.id
+                product_dic['id'] = sku_id
                 product_dic['name'] = sku_info.name
-                product_dic['url'] = sku_info.default_img_url
+                product_dic['url'] = str(sku_info.default_img_url)
                 product_dic['source']=sku_info.source_id.name
-                product_dic['like'] = item[1]
+                product_dic['like'] = str(int(item[1]))
                 product_info.append(product_dic)
-            r.set("index_cache",product_info,ex=600)
+            r.setex("index_cache",60*5,json.dumps(product_info))
             redis_index = r.get('index_cache')
             index_data = json.loads(redis_index)
         else:
@@ -63,43 +65,65 @@ class IndexShow(View):
 
 # 点进子类连接，显示子类产品（按updated_time从新到旧排）
 class ProductsListView(View):
+    # def get(self,request,subclass_id):
+    #     """
+    #     :param request:
+    #     :param subclass_id:子类id
+    #     :param page_num:第几页
+    #     :param page_size:每页显示多少项
+    #     :return:
+    #     """
+    #     #  127.0.0.1:8000/v1/product/catalogs/1/1/?page=1
+    #     # 0. 获取url传递参数值
+    #     page_num = request.GET.get('page',1)
+    #     # 1. 获取分类下的spu列表
+    #     spu_list_ids = Spu.objects.filter(sb_id=subclass_id).values("id")
+    #     sku_list = Sku.objects.filter(spu_id__in=spu_list_ids).order_by("-updated_time")
+    #     # 2.分页
+    #     # 创建分页对象，指定列表、页大小
+    #     page_num = int(page_num)
+    #     page_size = 18
+    #     try:
+    #         paginator = Paginator.page(sku_list,page_size)
+    #         # 获取指定页码的数据
+    #         page_skus = paginator.page(page_num)
+    #         page_skus_json = []
+    #         for sku in page_skus:
+    #             sku_dict = {}
+    #             sku_dict['skuid'] = sku.id
+    #             sku_dict['name'] = sku.name
+    #             sku_dict['image'] = str(sku.default_image_url)
+    #             sku_dict['source']=sku.source_id.name
+    #             page_skus_json.append(sku_dict)
+    #     except:
+    #         result = {'code': 40200, 'error': '页数有误，小于0或者大于总页数'}
+    #         return JsonResponse(result)
+    #     result = {'code': 200,
+    #               'data': page_skus_json,
+    #               'paginator': {'pagesize': page_size, 'total': len(sku_list)},
+    #               'base_url': settings.PIC_URL}
+    #     return JsonResponse(result)
     def get(self,request,subclass_id):
         """
         :param request:
         :param subclass_id:子类id
-        :param page_num:第几页
-        :param page_size:每页显示多少项
         :return:
         """
-        #  127.0.0.1:8000/v1/product/catalogs/1/1/?page=1
-        # 0. 获取url传递参数值
-        page_num = request.GET.get('page',1)
         # 1. 获取分类下的spu列表
         spu_list_ids = Spu.objects.filter(sb_id=subclass_id).values("id")
         sku_list = Sku.objects.filter(spu_id__in=spu_list_ids).order_by("-updated_time")
-        # 2.分页
-        # 创建分页对象，指定列表、页大小
-        page_num = int(page_num)
-        page_size = 10
-        try:
-            paginator = Paginator.page(sku_list,page_size)
-            # 获取指定页码的数据
-            page_skus = paginator.page(page_num)
-            page_skus_json = []
-            for sku in page_skus:
-                sku_dict = {}
-                sku_dict['skuid'] = sku.id
-                sku_dict['name'] = sku.name
-                sku_dict['image'] = str(sku.default_image_url)
-                sku_dict['source']=sku.source_id.name
-                page_skus_json.append(sku_dict)
-        except:
-            result = {'code': 40200, 'error': '页数有误，小于0或者大于总页数'}
-            return JsonResponse(result)
+        if not sku_list:
+            return JsonResponse({'code':'30111','error':"未能查询到该商品"})
+        sku_show_list = []
+        for sku in sku_list:
+            sku_dict = {}
+            sku_dict['skuid'] = sku.id
+            sku_dict['name'] = sku.name
+            sku_dict['image'] = str(sku.default_img_url)
+            sku_dict['source']=sku.source_id.name
+            sku_show_list.append(sku_dict)
         result = {'code': 200,
-                  'data': page_skus_json,
-                  'paginator': {'pagesize': page_size, 'total': len(sku_list)},
-                  'base_url': settings.PIC_URL}
+                  'data': sku_show_list}
         return JsonResponse(result)
 
 # 产品详情页
@@ -143,15 +167,20 @@ class ProductsDetailView(View):
                 result = {'code': 30300, 'error': "相关产品不存在", }
                 return JsonResponse(result)
 
-            sku_details['image'] = str(sku_item.default_image_url)
-            sku_details["price"] = sku_item.price
+            sku_details['image'] = str(sku_item.default_img_url)
+            sku_details["price"] = str(sku_item.price)
             sku_details["name"] = sku_item.name
-            sku_details["discount_price"] = sku_item.discount_price
+            sku_details["discount_price"] = str(sku_item.discount_price)
             sku_details["source"] = sku_item.source_id.name
             sku_details['sale_attr'] = []
             sku_details['url'] = str(sku_item.source_url)
             sku_details['feature'] = sku_item.feature
-            sku_details['like_count'] = r.hget('product:like', sku_id)
+            redis_like_count = r.zscore('product:like','product:%s'%sku_id)
+            if not redis_like_count:
+                sku_details['like_count'] = 0
+            else:
+                sku_details['like_count'] = redis_like_count
+
 
             sale_attr_and_value=[]
             spu_id = sku_item.spu_id
@@ -176,24 +205,29 @@ class ProductsDetailView(View):
                                                 划分依据：列表好遍历，字典好取值（key是固定的）
 
                                                 {'comment_id' : comment_id,
+                                                'comment_uid':comment_uid
                                                 'comment_username' : comment_username,
                                                 'comment_user_profile' : comment_user_profile,
                                                 'comment_content' : comment_content,
+                                                'comment_created_time':comment_created_time,
                                                 'comment_replies' : [
                                                                     {
                                                                         'reply_username' : reply_username,
-                                                                        'reply_profile' : reply_profile,
-                                                                        'reply_content' : reply_content
+                                                                        'reply_uid':reply_uid,
+                                                                        'reply_content' : reply_content,
+                                                                        'reply_created_time':reply_created_time
                                                                          ,
                                                                     {
                                                                         'reply_username' : reply_username,
-                                                                        'reply_profile' : reply_profile,
-                                                                        'reply_content' : reply_content
+                                                                        'reply_uid':reply_uid,
+                                                                        'reply_content' : reply_content,
+                                                                        'reply_created_time':reply_created_time
                                                                          ,
                                                                     {
                                                                         'reply_username' : reply_username,
-                                                                        'reply_profile' : reply_profile,
-                                                                        'reply_content' : reply_content
+                                                                        'reply_uid':reply_uid,
+                                                                        'reply_content' : reply_content,
+                                                                        'reply_created_time':reply_created_time
                                                                     }
                                                                     ,
                                                                     ...  
@@ -206,8 +240,11 @@ class ProductsDetailView(View):
             """
 
             comment_details = {}
-            total_comments_count = r.hget('product:comment',sku_id)
-            comment_details['total_comments_count'] = total_comments_count
+            redis_comment_total_count = r.hget('product:%s'%sku_id,'comment')
+            if not redis_comment_total_count:
+                comment_details['total_comments_count'] = 0
+            else:
+                comment_details['total_comments_count'] = redis_comment_total_count.decode()
             per_comment_detail_dic = []
 
 
@@ -216,31 +253,32 @@ class ProductsDetailView(View):
                 one_comment_info = {}
                 c_id = item.id
                 one_comment_info['comment_id'] = c_id
-                uid = item.uid
+                uid = item.uid.id
                 users = UserProfile.objects.filter(id=uid)
                 if not users:
                     return JsonResponse({'code':30112,'data':'查看该用户评论失败'})
                 comment_username = users[0].username
                 one_comment_info['comment_username']=comment_username
                 comment_user_profile = users[0].profile_image_url
-                one_comment_info['comment_user_profile'] = comment_user_profile
-                comment_user_profile['comment_content'] = item.content
+                one_comment_info['comment_user_profile'] = settings.PIC_URL+str(comment_user_profile)
+                one_comment_info['comment_content'] = item.content
+                one_comment_info['comment_created_time']=item.created_time
+                one_comment_info['comment_uid']=users[0].id
                 # 获取每条评论对应的回复
-                replies = Reply.objects.filter(c_id=c_id,isActive=True)
+                replies = ReplyProduct.objects.filter(c_id=c_id,isActive=True)
                 replies_dic = []
-                i = 1
 
                 for item in replies:
                     one_reply_info_detail = {}
-                    users = UserProfile.objects.filter(id=item.uid)
+                    users = UserProfile.objects.filter(id=item.uid.id)
                     reply_username = users[0].username
-                    reply_profile = users[0].profile_image_url
+                    reply_uid = users[0].id
                     reply_content = item.content
                     one_reply_info_detail['reply_username'] = reply_username
-                    one_reply_info_detail['reply_profile'] = reply_profile
+                    one_reply_info_detail['reply_uid'] = reply_uid
                     one_reply_info_detail['reply_content'] = reply_content
+                    one_reply_info_detail['reply_created_time'] = item.created_time
                     replies_dic.append(one_reply_info_detail)
-                    i += 1
                 one_comment_info['comment_replies'] = replies_dic
                 per_comment_detail_dic.append(one_comment_info)
             comment_details['per_comment_detail'] = per_comment_detail_dic
@@ -248,7 +286,7 @@ class ProductsDetailView(View):
 
 
         # 写入缓存
-            r.setex('index_detail_%s'%sku_id,60*60*24,json.dumps(sku_details))
+            r.setex('index_detail_%s'%sku_id,60*2,json.dumps(sku_details,cls=JsonCustomEncoder))
             redis_detail = r.get('index_detail_%s' % sku_id)
             sku_details = json.loads(redis_detail)
 
@@ -277,11 +315,11 @@ class Comment_product(View):
         Comment.objects.create(content=content,uid=uid,sku_id=sku_id)
 
         # 判断是否在redis中曾经有设立过计数key
-        sku_comment_count = r.hexists('product:comment',sku_id)
+        sku_comment_count = r.hexists('product:%s'%sku_id,'comment')
         if sku_comment_count is False:
-            r.hset('product:comment',sku_id,0)
+            r.hset('product:%s'%sku_id,'comment',0)
         # redis做评论计数
-        r.hincrby('peoducts:comment',sku_id,1)
+        r.hincrby('product:%s'%sku_id,'comment',1)
         result = {'code':200,'data':'评论成功'}
         return JsonResponse(result)
 
@@ -302,7 +340,7 @@ class Comment_product(View):
         comment.save()
         # redis做评论计数
         sku_id = comment.sku_id
-        r.hincrby('peoducts:comment', sku_id, -1)
+        r.hincrby('product:%s'%sku_id,'comment',-1)
         result = {'code': 200, 'data': '删除评论成功'}
         return JsonResponse(result)
 
@@ -318,12 +356,12 @@ class Reply(View):
         content = json_obj.get('content')
         uid = json_obj.get('uid')
         c_id = json_obj.get('c_id')
-        Reply.objects.create(content=content, uid=uid,c_id=c_id)
+        ReplyProduct.objects.create(content=content, uid=uid,c_id=c_id)
         # redis做评论计数
         comments = Comment.objects.filter(id=c_id)
         comment = comments[0]
         sku_id = comment.sku_id
-        r.hincrby('peoducts:comment', sku_id, 1)
+        r.hincrby('product:%s'%sku_id, 'comment', 1)
         # mysql数据库录入
         result = {'code':200,'data':'回复成功'}
         return JsonResponse(result)
@@ -335,7 +373,7 @@ class Reply(View):
             return JsonResponse(result)
         json_obj = json.loads(data)
         reply_id = json_obj.get('reply_id')
-        replies = Reply.objects.filter(id=reply_id)
+        replies = ReplyProduct.objects.filter(id=reply_id)
         if not replies:
             return JsonResponse({'code': 30106, 'error': '无法删除该回复'})
         reply = replies[0]
@@ -346,7 +384,7 @@ class Reply(View):
         comments = Comment.objects.filter(id=c_id)
         comment = comments[0]
         sku_id = comment.sku_id
-        r.hincrby('peoducts:comment', sku_id, -1)
+        r.hincrby('product:%s'%sku_id, 'comment', -1)
         result = {'code': 200, 'data': '删除回复成功'}
         return JsonResponse(result)
 
@@ -366,14 +404,14 @@ class LikeProduct(View):
         # 在mysql中根据uid和sku_id查看是否有记录，若没有记录，证明客户动作为点赞，在redis和mysql中记录点赞动作
         like_record = LikeProduct.objects.filter(uid=uid,sku_id=sku_id)
         if not like_record:
-            # 判断是否在redis中曾经有设立过计数key
-            sku_like_count = r.hexists('product:like', sku_id)
-            # 还未设立redis key
+            # 判断是否在redis中曾经有设立过计数key[有序集合]
+            sku_like_count = r.zscore('product:like','product:%s'%sku_id)
+            # 还未设立
             if sku_like_count is False:
                 #设立key
-                r.hset('product:like', sku_id, 0)
+                r.zadd('product:like',{'product:%s'%sku_id:0})
             # redis做评论计数加1
-            r.hincrby('peoducts:like', sku_id, 1)
+            r.zincrby('product:like',1,'product:%s'%sku_id)
                 # mysql数据库录入
             LikeProduct.objects.create(uid=uid, sku_id=sku_id)
             result = {'code':200,'data':'点赞成功'}
@@ -387,14 +425,14 @@ class LikeProduct(View):
                 isactive = False
                 like_record.save()
                 # redis计数减1
-                r.hincrby('product:like', sku_id, -1)
+                r.zincrby('product:like',-1,'product:%s'%sku_id)
                 return JsonResponse({'code':201,'data':'取消点赞成功'})
             # 用户曾经取消点赞 --> 现在：重新点赞
             else:
                 isactive = True
                 like_record.save()
                 # redis计数加1
-                r.hincrby('product:like', sku_id, 1)
+                r.zincrby('product:like',1,'product:%s'%sku_id)
                 return JsonResponse({'code':200,'data':'点赞成功'})
 
 # 收藏商品
@@ -411,11 +449,11 @@ class CollectProducts(View):
         Collect.objects.create(uid=uid,sku_id=sku_id)
 
         # 判断是否在redis中曾经有设立过计数key
-        sku_collect_count = r.hexists('product:collect', sku_id)
+        sku_collect_count = r.hexists('product:%s'%sku_id,'collect')
         if sku_collect_count is False:
-            r.hset('product:collect', sku_id, 0)
+            r.hset('product:%s'%sku_id,'collect', 0)
         # redis做评论计数
-        r.hincrby('product:collect', sku_id, 1)
+        r.hincrby('product:%s'%sku_id,'collect', 1)
         # mysql数据库录入
         result = {'code':200,'data':'收藏成功'}
         return JsonResponse(result)
@@ -435,6 +473,6 @@ class CollectProducts(View):
         collect.save()
         # redis做评论计数
         sku_id = collect.sku_id
-        r.hincrby('product:collect', sku_id, -1)
+        r.hincrby('product:%s'%sku_id,'collect', -1)
         result = {'code': 200, 'data': '取消点赞成功'}
         return JsonResponse(result)

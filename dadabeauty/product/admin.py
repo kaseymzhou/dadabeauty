@@ -56,3 +56,19 @@ class Sale_attrManager(admin.ModelAdmin):
     list_display_links = ['id']
 admin.site.register(models.Sale_attr,Sale_attrManager)
 
+class CommentManager(admin.ModelAdmin):
+    list_display = ['id','content','uid','sku_id','created_time','updated_time','isActive']
+admin.site.register(models.Comment,CommentManager)
+
+class ReplyManager(admin.ModelAdmin):
+    list_display = ['id','content','uid','c_id','created_time','updated_time','isActive']
+admin.site.register(models.ReplyProduct,ReplyManager)
+
+class CollectManager(admin.ModelAdmin):
+    list_display = ['id','uid','sku_id','created_time','updated_time','isActive']
+admin.site.register(models.Collect,CollectManager)
+
+class LikeManager(admin.ModelAdmin):
+    list_display = ['id','uid','sku_id','created_time','updated_time','isActive']
+admin.site.register(models.LikeProduct,LikeManager)
+

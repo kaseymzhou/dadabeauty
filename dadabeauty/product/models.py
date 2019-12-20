@@ -120,7 +120,7 @@ class Comment(models.Model):
     def __str__(self):
         return 'id :%s' % (self.id)
 
-class Reply(models.Model):
+class ReplyProduct(models.Model):
     content = models.TextField('评论回复')
     uid = models.ForeignKey(UserProfile)
     c_id = models.ForeignKey(Comment)
