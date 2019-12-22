@@ -57,6 +57,9 @@ urlpatterns = [
     # http://127.0.0.1:8000/v1/user/password
     url(r'^/password$',views.ChangePassword.as_view()),
 
+    # http://127.0.0.1:8000/v1/user/test_celery
+    # url(r'^/test_celery$',views.ChangePassword.as_view()),
+
 
 
 

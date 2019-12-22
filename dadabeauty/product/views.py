@@ -34,7 +34,7 @@ class IndexShow(View):
             print("未使用缓存")
             # 从redis中获取点赞前10的商品信息
             like_list = r.zrevrange('product:like',0,-1,withscores=True) #[(b'product:1', 5.0), (b'product:2', 2.0), (b'product:3', 1.0)]
-            like_top10_products = like_list[:30]
+            like_top10_products = like_list[:12]
             new_like_top10_products = []
             product_info = []
             for item in like_top10_products:
@@ -286,7 +286,7 @@ class ProductsDetailView(View):
 
 
         # 写入缓存
-            r.setex('index_detail_%s'%sku_id,60*2,json.dumps(sku_details,cls=JsonCustomEncoder))
+            r.setex('index_detail_%s'%sku_id,3,json.dumps(sku_details,cls=JsonCustomEncoder))
             redis_detail = r.get('index_detail_%s' % sku_id)
             sku_details = json.loads(redis_detail)
 
@@ -312,7 +312,9 @@ class Comment_product(View):
         sku_id = json_obj.get('sku_id')
         content = json_obj.get('content')
         uid = json_obj.get('uid')
-        Comment.objects.create(content=content,uid=uid,sku_id=sku_id)
+        commentuser = UserProfile.objects.filter(id=uid)
+        commentproduct = Sku.objects.filter(id=sku_id)
+        Comment.objects.create(content=content,uid=commentuser[0],sku_id=commentproduct[0])
 
         # 判断是否在redis中曾经有设立过计数key
         sku_comment_count = r.hexists('product:%s'%sku_id,'comment')
@@ -356,7 +358,9 @@ class Reply(View):
         content = json_obj.get('content')
         uid = json_obj.get('uid')
         c_id = json_obj.get('c_id')
-        ReplyProduct.objects.create(content=content, uid=uid,c_id=c_id)
+        replyuser = UserProfile.objects.filter(id=uid)
+        replycomment = Comment.objects.filter(id=c_id)
+        ReplyProduct.objects.create(content=content, uid=replyuser[0],c_id=replycomment[0])
         # redis做评论计数
         comments = Comment.objects.filter(id=c_id)
         comment = comments[0]
@@ -390,7 +394,7 @@ class Reply(View):
 
 
 # 点赞
-class LikeProduct(View):
+class LikeP(View):
     @logging_check
     def post(self,request):
         data = request.body
@@ -400,10 +404,13 @@ class LikeProduct(View):
         json_obj = json.loads(data)
         uid = json_obj.get('uid')
         sku_id = json_obj.get('sku_id')
+        print(uid,sku_id)
 
         # 在mysql中根据uid和sku_id查看是否有记录，若没有记录，证明客户动作为点赞，在redis和mysql中记录点赞动作
-        like_record = LikeProduct.objects.filter(uid=uid,sku_id=sku_id)
-        if not like_record:
+        likeuser = UserProfile.objects.filter(id=uid)
+        likesku = Sku.objects.filter(id=sku_id)
+        like_record = LikeProduct.objects.filter(uid=likeuser[0],sku_id=likesku[0])
+        if like_record.count() == 0:
             # 判断是否在redis中曾经有设立过计数key[有序集合]
             sku_like_count = r.zscore('product:like','product:%s'%sku_id)
             # 还未设立
@@ -413,7 +420,7 @@ class LikeProduct(View):
             # redis做评论计数加1
             r.zincrby('product:like',1,'product:%s'%sku_id)
                 # mysql数据库录入
-            LikeProduct.objects.create(uid=uid, sku_id=sku_id)
+            LikeProduct.objects.create(uid=likeuser[0], sku_id=likesku[0])
             result = {'code':200,'data':'点赞成功'}
             return JsonResponse(result)
         # 有mysql记录，看记录来判断用户进行的是点赞还是取消点赞动作，并进行相反的数据库记录
@@ -422,14 +429,14 @@ class LikeProduct(View):
             isactive = like_record.isActive
             # 用户曾经点赞 --> 现在：取消点赞
             if isactive == True:
-                isactive = False
+                like_record.isActive = False
                 like_record.save()
                 # redis计数减1
                 r.zincrby('product:like',-1,'product:%s'%sku_id)
                 return JsonResponse({'code':201,'data':'取消点赞成功'})
             # 用户曾经取消点赞 --> 现在：重新点赞
             else:
-                isactive = True
+                like_record.isActive = True
                 like_record.save()
                 # redis计数加1
                 r.zincrby('product:like',1,'product:%s'%sku_id)
@@ -446,33 +453,32 @@ class CollectProducts(View):
         json_obj = json.loads(data)
         uid = json_obj.get('uid')
         sku_id = json_obj.get('sku_id')
-        Collect.objects.create(uid=uid,sku_id=sku_id)
-
-        # 判断是否在redis中曾经有设立过计数key
-        sku_collect_count = r.hexists('product:%s'%sku_id,'collect')
-        if sku_collect_count is False:
-            r.hset('product:%s'%sku_id,'collect', 0)
-        # redis做评论计数
-        r.hincrby('product:%s'%sku_id,'collect', 1)
-        # mysql数据库录入
-        result = {'code':200,'data':'收藏成功'}
-        return JsonResponse(result)
-    @logging_check
-    def delete(self, request):
-        data = request.body
-        if not data:
-            result = {'code': '30110', 'error': '取消收藏失败'}
+        collectuser = UserProfile.objects.filter(id=uid)
+        collectsku= Sku.objects.filter(id=sku_id)
+        collectrecord = Collect.objects.filter(uid=collectuser[0],sku_id=collectsku[0])
+        print(collectrecord)
+        if collectrecord.count() == 0:
+            Collect.objects.create(uid=collectuser[0],sku_id=collectsku[0])
+            # 判断是否在redis中曾经有设立过计数key
+            sku_collect_count = r.hexists('product:%s'%sku_id,'collect')
+            if sku_collect_count is False:
+                r.hset('product:%s'%sku_id,'collect', 0)
+            # redis做评论计数
+            r.hincrby('product:%s'%sku_id,'collect', 1)
+            result = {'code':200,'data':'收藏成功'}
             return JsonResponse(result)
-        json_obj = json.loads(data)
-        collect_id = json_obj.get('collect_id')
-        collects = Collect.objects.filter(id=collect_id)
-        if not collects:
-            return JsonResponse({'code': 30111, 'error': '无法取消收藏'})
-        collect = collects[0]
-        collect.isActive = False
-        collect.save()
-        # redis做评论计数
-        sku_id = collect.sku_id
-        r.hincrby('product:%s'%sku_id,'collect', -1)
-        result = {'code': 200, 'data': '取消点赞成功'}
-        return JsonResponse(result)
+        else:
+            collectrecord = collectrecord[0]
+            iscollect = collectrecord.isActive
+            if iscollect == True:
+                collectrecord.isActive = False
+                collectrecord.save()
+                r.hincrby('product:%s' % sku_id, 'collect', -1)
+                result = {'code': 201, 'data': '取消收藏成功'}
+                return JsonResponse(result)
+            else:
+                collectrecord.isActive = True
+                collectrecord.save()
+                r.hincrby('product:%s' % sku_id, 'collect', 1)
+                result = {'code': 200, 'data': '收藏成功'}
+                return JsonResponse(result)

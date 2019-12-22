@@ -3,7 +3,7 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    url(r'^/sendtopics$',views.send_topics),
+    url(r'^/sendtopics$',views.Send_topics.as_view()),
     # http://127.0.0.1:8000/v1/community/index  访问所有博客
     # http://127.0.0.1:8000/v1/community/index?tag=xxx  访问tag标签博客
     url(r'^index$',views.index),

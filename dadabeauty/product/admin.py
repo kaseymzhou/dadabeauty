@@ -18,17 +18,18 @@ class GoodsSubclassManager(admin.ModelAdmin):
 admin.site.register(models.GoodsSubclass,GoodsSubclassManager)
 
 class BrandManager(admin.ModelAdmin):
-    list_display = ['id','name','logo_url','created_time','updated_time']
+    list_display = ['id','name','logo_url']
     list_display_links = ['id']
 admin.site.register(models.Brand,BrandManager)
 
 class SpuManager(admin.ModelAdmin):
     list_display = ['id','name','sb_id','br_id','created_time','updated_time']
+    list_editable = ['name','sb_id','br_id']
     list_display_links = ['id']
 admin.site.register(models.Spu,SpuManager)
 
 class SourceManager(admin.ModelAdmin):
-    list_display = ['id','name','created_time','updated_time']
+    list_display = ['id','name']
     list_display_links = ['id']
 admin.site.register(models.Source,SourceManager)
 
@@ -48,11 +49,13 @@ admin.site.register(models.Sku, SkuManager)
 
 class Sale_attr_valManager(admin.ModelAdmin):
     list_display = ['id','val','sale_attr_id','sku_id','created_time','updated_time']
+    list_editable = ['val','sale_attr_id','sku_id']
     list_display_link = ['id']
 admin.site.register(models.Sale_attr_val,Sale_attr_valManager)
 
 class Sale_attrManager(admin.ModelAdmin):
     list_display = ['id','attr_name','spu_id','created_time','updated_time']
+    list_editable = ['attr_name','spu_id']
     list_display_links = ['id']
 admin.site.register(models.Sale_attr,Sale_attrManager)
 

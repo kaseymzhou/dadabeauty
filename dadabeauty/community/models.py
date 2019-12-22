@@ -33,7 +33,7 @@ class Blog(models.Model):
 
 class Image(models.Model):
     b_id = models.ForeignKey(Blog)
-    image = models.ImageField(verbose_name='图片路径',default=0)
+    image = models.ImageField(verbose_name='图片路径',default='',upload_to='blogpics')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     update_time = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 

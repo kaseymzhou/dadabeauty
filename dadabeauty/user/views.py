@@ -15,11 +15,10 @@ from .models import *
 from django.conf import settings
 import os
 from dtoken.views import make_token
-from .tasks import send_active_email
 from tools.logging_check import logging_check
 from community.models import *
 from product.models import *
-
+from .tasks import send_active_mail
 # Create your views here.
 
 r = redis.Redis(host='127.0.0.1',port=6379,db=0)
@@ -383,7 +382,7 @@ class Users(View):
         # 将随机码组合存储在redis中 可以扩展成只存储1-3天
         r.set('email_active_%s' % (username), code_str)
         active_url = 'http://127.0.0.1:7001/dadabeauty/active.html?code=%s' % (code_str_bs.decode())
-        send_active_email.delay(email, active_url)
+        # send_active_mail.delay(email, active_url)
         return JsonResponse({'code': 200, 'username': username, 'uid':create_uid,'data': {'token': token.decode()}})
 
 # 发送激活邮件函数

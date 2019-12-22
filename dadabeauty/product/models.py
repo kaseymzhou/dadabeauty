@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+
 from user.models import UserProfile
 
 # Create your models here.
@@ -41,7 +43,7 @@ class Spu(models.Model):
     name=models.CharField('spu名字',max_length=100)
     sb_id = models.ForeignKey(GoodsSubclass)
     br_id = models.ForeignKey(Brand)
-    created_time = models.DateTimeField(auto_now_add=True)
+    created_time = models.DateTimeField(default=timezone.now)
     updated_time = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -94,7 +96,7 @@ class Sale_attr(models.Model):
         return 'id :%s; sale_attr:%s' % (self.id, self.attr_name)
 
 class Sale_attr_val(models.Model):
-    val = models.CharField('产品属性值',max_length=50)
+    val = models.CharField('产品属性值',max_length=50,default='')
     sale_attr_id = models.ForeignKey(Sale_attr)
     sku_id = models.ForeignKey(Sku)
     created_time = models.DateTimeField(auto_now_add=True)
