@@ -163,3 +163,14 @@ class LikeProduct(models.Model):
     def __str__(self):
         return 'id :%s' % (self.id)
 
+class ProductScore(models.Model):
+    uid = models.ForeignKey(UserProfile)
+    sku_id = models.ForeignKey(Sku)
+    score = models.IntegerField(verbose_name='分数')
+
+    class Meta:
+        db_table = 'pscore'
+
+    def __str__(self):
+        return "uid(%s)-sku_id(%s)-score(%s)"%(self.uid,self.sku_id,self.score)
+

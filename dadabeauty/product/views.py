@@ -364,7 +364,8 @@ class Reply(View):
         # redis做评论计数
         comments = Comment.objects.filter(id=c_id)
         comment = comments[0]
-        sku_id = comment.sku_id
+        sku_id = comment.sku_id.id
+        print(sku_id)
         r.hincrby('product:%s'%sku_id, 'comment', 1)
         # mysql数据库录入
         result = {'code':200,'data':'回复成功'}
@@ -482,3 +483,28 @@ class CollectProducts(View):
                 r.hincrby('product:%s' % sku_id, 'collect', 1)
                 result = {'code': 200, 'data': '收藏成功'}
                 return JsonResponse(result)
+
+# 产品评分
+class ProductScore(View):
+    @logging_check
+    def post(self,request):
+        data = request.body
+        if not data:
+            result = {'code': '30110', 'error': '评分失败，请重试'}
+            return JsonResponse(result)
+        json_obj = json.loads(data)
+        uid = json_obj.get('uid')
+        sku_id = json_obj.get('sku_id')
+        score = json_obj.get('score')
+        scoreuser = UserProfile.objects.filter(id=uid)
+        scoresku = Sku.objects.filter(id=sku_id)
+        # 查看是否曾经评过分
+        scorerecord = ProductScore.objects.filter(uid=scoreuser[0], sku_id=scoresku[0])
+        if not scorerecord:
+            ProductScore.objects.create(uid=scoreuser[0], sku_id=scoresku[0],score=score)
+            return JsonResponse({'code': 200, 'data': "评分成功，感谢支持～"})
+        else:
+            scorerecord = scorerecord[0]
+            scorerecord.score = score
+            scorerecord.save()
+            return JsonResponse({'code': 200, 'data': "修改评分成功，感谢支持～"})

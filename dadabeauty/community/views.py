@@ -2,7 +2,7 @@ import redis
 from django.http import JsonResponse
 
 # Create your views here.
-from community.models import Blog, Tag, Forward, Comment, Reply, Collect, Image
+from community.models import Blog, Tag, Forward, Comment, Reply, Collect, Image,Tag_blog
 from dadabeauty import settings
 from tools.logging_check import logging_check
 import json
@@ -13,69 +13,54 @@ from user.models import UserProfile
 
 r = redis.Redis(host='127.0.0.1', port=6379, db=1)
 
-# class Sendpic(View):
-#     @logging_check
-#     def post(self,request):
-#     # http://127.0.0.1:8000/v1/community/sendpics?authorname=xxx
-#         author_name = request.GET.get('authorname')
-#         blog_id = request.GET.get('bid')
-#         users = UserProfile.objects.filter(username=author_name)
-#         uid = users[0].id
-#         blogs = Blog.objects.filter(id=blog_id)
-#         Image =
-#         user.profile_image_url = request.FILES['blogpics']
-#         user.save()
-#         img = settings.PIC_URL + str(user.profile_image_url)
-#         print(img)
-#         return JsonResponse({'code': 200, 'uid': uid, 'img': img})
-
-
+# 发表博客文章（已完成）
 class Send_topics(View):
     @logging_check
     def post(self,request):
         # 发表博客
         # http://127.0.0.1:8000/v1/community/send_topics?authorname=xxx
         author_name = request.GET.get('authorname')
-        # author = request.myuser
-        # if author.username != author_name:
-        #     result = {'code': 30101, 'error': '非本人操作!'}
-        #     return JsonResponse(result)
-        json_str = request.body
-        json_obj = json.loads(json_str)
-        title = json_obj.get('title')
+        # json_str = request.body
+        # json_obj = json.loads(json_str)
+        title = request.POST.get('title')
         if not title:
             result = {'code': 30103, 'error': 'title不得为空!'}
             return JsonResponse(result)
-        tag = json_obj.get('tag')
-        if not tag:
-            result = {'code': 30102, 'error': 'tag不得为空!'}
-            return JsonResponse(result)
-        tag_object = Tag.objects.get(tar_name=tag)
         # 文章内容
-        content = json_obj.get('content')
+        content = request.POST.get('content')
         if not content:
             result = {'code': 30104, 'error': 'content不得为空!'}
             return JsonResponse(result)
-        # info = title + content[10]
-        # id = hashlib.md5(info.encode()).hexdigest()
-        # # 创建blog
-        # Blog.objects.create(id=id, title=title, content=content, uid=author, tid=tag_object)
+        info = title + content[:10]
+        unique_key = hashlib.md5(info.encode()).hexdigest()
+        # 创建blog
         users = UserProfile.objects.filter(username=author_name)
-        Blog.objects.create(title=title,content=content,uid=users[0])
+        Blog.objects.create(unique_key=unique_key, title=title, content=content, uid=users[0])
+
+        # 创建tag
+        tag_list = request.POST.get('tags')
+        if not tag_list:
+            result = {'code': 30102, 'error': 'tag不得为空!'}
+            return JsonResponse(result)
+        tag_new_list = tag_list.split(',')
+        blog_object = Blog.objects.filter(unique_key=unique_key)
+        blog_object = blog_object[0]
+        for item in tag_new_list:
+            tag_object = Tag.objects.filter(tag_name=item)
+            tag_object = tag_object[0]
+            Tag_blog.objects.create(tag_id_fk=tag_object,blog_id_fk=blog_object)
 
         # 添加图片
-
-        blog = Blog.objects.filter(id=id)
-        blog = blog[0]
-        image = Blog.objects.filter(b_id=blog)
-        image = image[0]
-        for i in range(4):
-            image.image = request.FILES['file{}'.format(i)]
-            image.save()
-            img = settings.PIC_URL + str(image.image)
-
-        result = {'code': 200, 'username': author_name}
-        return JsonResponse(result)
+        files = request.FILES.getlist('blogpics')
+        print(files)
+        for f in files:
+            dest = open('../dadabeauty/media/blogpics/' + f.name, 'wb+')
+            for chunk in f.chunks():
+                dest.write(chunk)
+                Image.objects.create(b_id=blog_object, image='blogpics/'+f.name)
+            dest.close()
+            # 图片访问地址  http://127.0.0.1:8000/media/blogpics/文件名  ==>  settings.PIC_URL+str(image表对象.image)
+        return JsonResponse({'code':200})
 
     @logging_check
     def get(self,request):
@@ -96,71 +81,92 @@ class Send_topics(View):
         return JsonResponse(res)
 
 
-@logging_check
+# 不需要登录也可以查看所有博客
 def index(request):
     # http://127.0.0.1:8000/v1/community/index  访问所有博客
     # http://127.0.0.1:8000/v1/community/index?tag=xxx  访问tag标签博客
     if request.method == 'GET':
-        user_me = request.myuser
         tag = request.GET.get('tag_name')
-        if not tag:
-            blog_list = Blog.objects.filter('is_active' == True).order_by('create_time')
+        if not tag: #周敏已改 if not tag部分
+            '''
+            反前端数据结构
+            'data':[{'bid':bid,
+                     'title':title,
+                     'content':content,
+                     'create_time':create_time,
+                     'username':username,
+                     'tags':[tag,tag,tag...],
+                     'like_count':like_count,
+                     'comment_count':comment_count,
+                     'forward_count':forward_count,
+                     'collect_count':collect_count,
+                     'img':[img1,img2,img3...]},
+                     {},
+                     {},
+                ...]
+            '''
+            blog_list = Blog.objects.filter('is_active' == True).order_by('-create_time')
+            blog_send_list = []
             for item in blog_list:
-                id = item['id']
-                username = item.userprofile.username
-                title = item['title']
-                tag_name = item.tag.tag_name
-                content = item['content']
-                create_time = item['create_time']
-                like_count_exist = r.hexists('like:count', id)
-                if like_count_exist:
-                    like_count = r.hget('like:count', id)
-                else:
+                per_blog = {}
+                per_blog['bid'] = item.id
+                per_blog['title'] = item.title
+                per_blog['content'] = item.content
+                per_blog['username'] = item.uid.username
+                per_blog['create_time'] = item.create_time
+                tags_object_list = Tag_blog.objects.filter(blog_id_fk=item)
+                total_tags_list = []
+                # 取tag
+                for tag_obj in tags_object_list:
+                    per_tag_name = tag_obj.tag_id_fk.tag_name
+                    total_tags_list.append(per_tag_name)
+                per_blog['tags'] = total_tags_list
+                # 取点赞数
+                like_count_exist = r.hexists('blog:%s'%item.id,'like')
+                if not like_count_exist:
                     like_count = 0
-                forward_count_exist = r.hexists('forward:count', id)
-                if forward_count_exist:
-                    forward_count = r.hget('forward:count', id)
                 else:
+                    like_count = r.hget('blog:%s'%item.id,'like')
+                per_blog['like_count'] = like_count
+                # 取转发数
+                forward_count = r.hexists('blog:%s'%item.id,'forward')
+                if not forward_count:
                     forward_count = 0
-                collect_count_exist = r.hexists('collect:count', id)
-                if collect_count_exist:
-                    collect_count = r.hget('collect:count', id)
                 else:
+                    forward_count = r.hget('blog:%s'%item.id,'forward')
+                per_blog['forward_count'] = forward_count
+                # 取收藏数数
+                collect_count_exist = r.hexists('blog:%s'%item.id,'collect')
+                if not collect_count_exist:
                     collect_count = 0
-                comment_count_exist = r.hexists('comment:count', id)
-                if comment_count_exist:
-                    comment_count = r.hget('comment:count', id)
                 else:
+                    collect_count = r.hget('blog:%s'%item.id,'collect')
+                per_blog['collect_count'] = collect_count
+                # 取评论数
+                comment_count_exist = r.hexists('blog:%s'%item.id,'comment')
+                if not comment_count_exist:
                     comment_count = 0
-                comments = Comment.objects.filter(b_id=id, isActive=True)
-                comment = {}
-                comment_list = []
-                for item in comments:
-                    comment['uid'] = item.userprofile.username
-                    comment['comment'] = item['comment']
-                    comment_list.append(comment)
-                images = Image.objects.filter(b_id=id)
-                image = {}
+                else:
+                    comment_count = r.hget('blog:%s'%item.id,'comment')
+                per_blog['comment_count'] = comment_count
+                # comments = Comment.objects.filter(b_id=id, isActive=True)
+                # comment = {}
+                # comment_list = []
+                # for item in comments:
+                #     comment['uid'] = item.userprofile.username
+                #     comment['comment'] = item['comment']
+                #     comment_list.append(comment)
+
+                # 取图片
+                images = Image.objects.filter(b_id=item)
                 image_list = []
                 for item in images:
-                    image['url'] = item['image']
-                    image_list.append(image)
-                data = {'id': id,
-                        'user_me': user_me,
-                        'username': username,
-                        'title': title,
-                        'tag_name': tag_name,
-                        'content': content,
-                        'crete_time': create_time,
-                        'like_count': like_count,
-                        'forward_count': forward_count,
-                        'collect_count': collect_count,
-                        'comment_count': comment_count,
-                        'image_urls': image_list,  # 列表{'image_urls':[{'url':''}]}
-                        'comments': comment_list  # 列表{'comments':[{'username':'','comment':''}]}
-                        }
-                result = {'code': 200, 'data': data}
-                return JsonResponse(result)
+                    image_list.append(settings.PIC_URL+str(item.image))
+                per_blog['img'] = image_list
+                blog_send_list.append(per_blog)
+            result = {'code': 200, 'data': blog_send_list}
+            return JsonResponse(result)
+
         else:
             tag = Tag.objects.filter(tag_name=tag)
             if not tag:
@@ -209,7 +215,7 @@ def index(request):
                     image['url'] = item['image']
                     image_list.append(image)
                 data = {'id': id,
-                        'user_me': user_me,
+                        #'user_me': user_me,
                         'username': username,
                         'title': title,
                         'tag_name': tag_name,

@@ -17,10 +17,16 @@ urlpatterns = [
     # http://127.0.0.1:8000/v1/product/comment
     url(r'^/comment$',views.Comment_product.as_view()),
 
-
+    # http://127.0.0.1:8000/v1/product/reply
     url(r'^/reply$',views.Reply.as_view()),
 
+    # http://127.0.0.1:8000/v1/product/like
     url(r'^/like$',views.LikeP.as_view()),
 
+    # http://127.0.0.1:8000/v1/product/collect
     url(r'^/collect$',views.CollectProducts.as_view()),
+
+    # http://127.0.0.1:8000/v1/product/score
+    url(r'^/score$',views.ProductScore.as_view())
+
 ]
