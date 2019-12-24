@@ -18,7 +18,7 @@ class Send_topics(View):
     @logging_check
     def post(self,request):
         # 发表博客
-        # http://127.0.0.1:8000/v1/community/send_topics?authorname=xxx
+        # http://127.0.0.1:8000/v1/community/sendtopics?authorname=xxx
         author_name = request.GET.get('authorname')
         # json_str = request.body
         # json_obj = json.loads(json_str)
