@@ -27,6 +27,10 @@ urlpatterns = [
     url(r'^/collect$',views.CollectProducts.as_view()),
 
     # http://127.0.0.1:8000/v1/product/score
-    url(r'^/score$',views.ProductScore.as_view())
+    url(r'^/score$',views.PScore.as_view()),
+
+    # http://127.0.0.1:8000/v1/product/collectpro/(user_id)
+    url(r'^/collectpro/(\d+)$',views.CollectProductView.as_view()),
+
 
 ]

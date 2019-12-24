@@ -56,7 +56,7 @@ class PersonalIndex(View):
         username = user.username
         description = user.description
         profile_img = user.profile_image_url
-        all_blog_list = Blog.objects.filter(uid=uid,isActive=True).order_by('-updated_time')
+        all_blog_list = Blog.objects.filter(uid=uid,is_active=True).order_by('-update_time')
         if not all_blog_list:
             return JsonResponse({'code':10114,'data':'您还未发表文章'})
         blogs_list = []
@@ -64,10 +64,8 @@ class PersonalIndex(View):
             per_blog_info_dic ={}
             per_blog_info_dic['title']=item.title
             per_blog_info_dic['content']=item.content
-            per_blog_info_dic['created_time']=item.created_time
-            per_blog_info_dic['like_count']=item.like_count
-            per_blog_info_dic['comment_count']=item.comment_count
-            per_blog_info_dic['forward_count']=item.forward_count
+            per_blog_info_dic['create_time']=item.create_time
+
             blogs_list.append(per_blog_info_dic)
 
         result = {'code':200,'data':{
@@ -79,128 +77,65 @@ class PersonalIndex(View):
         return JsonResponse(result)
 
 
+# 访问他人主页
+class OthersProfile(View):
+    def get(self,request,ouid):
+        ousers = UserProfile.objects.filter(id=ouid)
+        ouser = ousers[0]
+        img = settings.PIC_URL+str(ouser.profile_image_url)
+        username = ouser.username
+        description = ouser.description
+        data = {'img':img,'username':username,'description':description}
+        return JsonResponse({'code':200,'data':data})
+
+
 # 用户个人主页'我的关注'页面展示
 class FocusView(View):
     @logging_check
     def get(self,request,uid):
-        '''
-                返给前端的数据结构:
-                'data':{
-                    'uid':uid,
-                    'follow_amount':follow_count,
-                    'follow_info':[
-                                {'followed_username':followed_username,
-                                 'followed_profile':followed_profile
-                                },
-                                {'followed_username':followed_username,
-                                 'followed_profile':followed_profile
-                                },
-                                ....
-
-                                 ]
-                        }
-                '''
-        follow_count = r.hget('fans:amount',uid)
-        follows = Follow.objects.filter(fans_id=uid,isActive=True).order_by('-updated_time')
+        follow_count = r.hget('user:%s'%uid,'follow_count')
+        follow_count = follow_count.decode()
+        follow_object = UserProfile.objects.filter(id=uid)
+        follows = FollowUser.objects.filter(fans_id=follow_object[0],isActive=True).order_by('-updated_time')
         if not follows:
             return JsonResponse({'code':10115,'data':'你还没有关注过别人哦'})
         follow_info = []
         for item in follows:
             per_follow_info = {}
-            followed_id = item.followed_id
-            followers = UserProfile.objects.filter(id=followed_id)
-            followed_username = followers[0].username
-            followed_profile = followers[0].profile_image_url
-            per_follow_info['followed_username']=followed_username
-            per_follow_info['followed_profile']=followed_profile
+            per_follow_info['id'] = item.followed_id.id
+            per_follow_info['username'] = item.followed_id.username
+            per_follow_info['profile'] = settings.PIC_URL+str(item.followed_id.profile_image_url)
+            per_follow_info['description']=item.followed_id.description
             follow_info.append(per_follow_info)
         result = {'code':200,'data':{
-            'uid':uid,
-            'follow_amount':follow_count,
-            'follow_info':follow_info
-        }}
+                                    'uid':uid,
+                                    'follow_count':follow_count,
+                                    'follow_info':follow_info}
+                  }
         return JsonResponse(result)
 
 # 用户个人主页'我的粉丝'页面展示
 class FansView(View):
     @logging_check
-    def get(self, request, uid):
-        '''
-                返给前端的数据结构:
-                'data':{
-                    'uid':uid,
-                    'fans_amount':fans_count,
-                    'fans_info':[
-                                {'fans_username':fans_username,
-                                 'fans_profile':fans_profile
-                                },
-                                {'fans_username':fans_username,
-                                 'fans_profile':fans_profile
-                                },
-                                ....
-
-                                 ]
-                        }
-                '''
-        fans_count = r.hget('followed_id', uid)
-        fans = Follow.objects.filter(followed=uid, isActive=True).order_by('-updated_time')
+    def get(self,request,uid):
+        fans_count = r.hget('user:%s'%uid, 'fans_count')
+        fans_count = fans_count.decode()
+        fans_object = UserProfile.objects.filter(id=uid)
+        fans = FollowUser.objects.filter(followed_id=fans_object[0], isActive=True).order_by('-updated_time')
         if not fans:
             return JsonResponse({'code': 10116, 'data': '你还没有粉丝哦'})
         fans_info = []
         for item in fans:
             per_fans_info = {}
-            fans_id = item.fans_id
-            fans_profile_info = UserProfile.objects.filter(id=fans_id)
-            fans_username = fans_profile_info[0].username
-            fans_profile = fans_profile_info[0].profile_image_url
-            per_fans_info['fans_username'] = fans_username
-            per_fans_info['fans_profile'] = fans_profile
+            per_fans_info['id'] = item.fans_id.id
+            per_fans_info['profile'] = settings.PIC_URL+str(item.fans_id.profile_image_url)
+            per_fans_info['username'] = item.fans_id.username
+            per_fans_info['description'] = item.fans_id.description
             fans_info.append(per_fans_info)
         result = {'code': 200, 'data': {
-            'uid': uid,
-            'follow_amount': fans_count,
-            'follow_info': fans_info
-        }}
-        return JsonResponse(result)
-
-
-# 用户个人主页'收藏商品'页面展示
-class CollectProductView(View):
-    @logging_check
-    def get(self,uid):
-        '''
-        返给前端的数据结构:
-        'data':{
-            'uid':uid,
-            'blogs':[
-                    {'title':title,
-                            'content':content
-                            'created_time':created_time,
-                            'like_count':like_count,
-                            'comment_count':comment_count,
-                            'forward_count':forward_count},
-                    ....
-                    ]
-                }
-        '''
-        sku_info_list=[]
-        collect_list = Collect.objects.filter(uid=uid,isActive=True).order_by('-updated_time')
-        if not collect_list:
-            return JsonResponse({'code':10117,'data':'你还没收藏产品哦'})
-        for item in collect_list:
-            per_sku_info = {}
-            sku_id = item.sku_id
-            sku_info = Sku.objects.filter(id=sku_id)
-            sku_name = sku_info.name
-            sku_img = sku_info.default_img_url
-            collect_count = r.hget('product:collect',sku_id)
-            per_sku_info['sku_name']=sku_name
-            per_sku_info['sku_img']=sku_img
-            per_sku_info['collect_count']=collect_count
-            sku_info_list.append(per_sku_info)
-        result = {'code':200,'data':{
-                                    'uid':uid,
-                                    'sku_info':sku_info_list}
+                                        'uid': uid,
+                                        'fans_count': fans_count,
+                                        'fans_info': fans_info}
                   }
         return JsonResponse(result)
 
@@ -370,8 +305,8 @@ class Users(View):
         user = UserProfile.objects.filter(username=username)
         user = user[0]
         create_uid = user.id
-        r.hset('followed:amount', create_uid, 0)
-        r.hset('fans:amount', create_uid, 0)
+        r.hset('user:%s'%create_uid, 'follow_count', 0)
+        r.hset('user:%s'%create_uid, 'fans_count', 0)
         # 生成、签发token
         # {'code':200, 'username':'xxxx', 'data':{'token':xxxx}}
         token = make_token(username)
@@ -619,52 +554,39 @@ class FanView(View):
             json_obj = json.loads(data)
             followed_id = json_obj.get('followed_id')
             fans_id = json_obj.get('fans_id')
-            followed = UserProfile.object.filter(followed_id=followed_id, fans_id=fans_id)
+            followeders = UserProfile.objects.filter(id=followed_id)
+            followers = UserProfile.objects.filter(id=fans_id)
+            followed = FollowUser.object.filter(followed_id=followeders[0], fans_id=followers[0])
+            # 没有mysql表记录，证明用户动作为关注
             if not followed:
                 # 未关注过该用户
-                Follow.objects.create(followed_id=followed_id, fans_id=fans_id)
-                r.hincrby('followed:amount', followed_id, 1) # 被关注用户redis粉丝数加1
-                r.hincrby('fans:amount',fans_id,1) # 关注了他人的用户redis关注数加1
+                FollowUser.objects.create(followed_id=followeders[0], fans_id=followers[0])
+                fans_record = r.hexists('user:%s'%fans_id, 'follow_count')
+                follow_record = r.hexists('user:%s' % followed_id, 'fans_count')
+                # 粉丝者的关注他人数加1
+                if not fans_record:
+                    r.hset('user:%s'%fans_id, 'follow_count',0)
+                r.hincrby('user:%s'%fans_id, 'follow_count',1)
+                # 被关注者的粉丝数加1
+                if not follow_record:
+                    r.hset('user:%s' % followed_id, 'fans_count', 0)
+                r.hincrby('user:%s' % followed_id, 'fans_count', 1)
+            # 有mysql记录，根据记录来看是关注还是取消关注
             else:
+                followed = followed[0]
+                # 曾经关注过该用户但取消了 --> 现在重新关注
                 if followed.isActive is False:
-                    # 曾经关注过该用户但取消了
-                    followed = followed[0]
                     followed.isActive = True
                     followed.save()
-                    r.hincrby('followed:amount',followed_id,1) # 被关注用户redis粉丝数加1
-                    r.hincrby('fans:amount', fans_id, 1)  # 关注了他人的用户redis关注数加1
+                    r.hincrby('user:%s' % followed_id, 'fans_count', 1) # 被关注用户redis粉丝数加1
+                    r.hincrby('user:%s'%fans_id, 'follow_count',1)  # 关注了他人的用户redis关注数加1
+                # 已处于关注状态 --> 现在取消关注
                 else:
-                    return JsonResponse({'code':10114,'data':'关注失败'})
-            followed_no = r.hget('followed',followed_id)
-            fans_no = r.hget('fans',fans_id)
-            result = {'code':200,'data':{'followed_id':followed_id,'fans_id':fans_id,'followed_no':followed_no,
-                                         'fans_no':fans_no}}
-        return JsonResponse(result)
-    @logging_check
-    def delete(self,request):
-        # 取消关注
-        data = request.body  # {'followed_id':01,'fans_id':02}
-        if not data:
-            result = {'code': '10101', 'error': '取消关注失败'}
-            return JsonResponse(result)
-        json_obj = json.loads(data)
-        followed_id = json_obj.get('followed_id')
-        fans_id = json_obj.get('fans_id')
-        # 1.查
-        followed = UserProfile.objects.filter(followed_id=followed_id,fans_id=fans_id)
-        if not followed:
-            return JsonResponse({'code': 10112, 'error': 'not found the user'})
-        followed = followed[0]
-        # 2.改
-        followed.isActive = False
-        followed.save()
-        r.hincrby('followed:amount', followed_id, -1)  # 被关注用户redis粉丝数减1
-        r.hincrby('fans:amount', fans_id, -1)  # 关注了他人的用户redis关注数减1
-        # 3.更新
-        followed_no = r.hget('followed', followed_id)
-        fans_no = r.hget('fans', fans_id)
-        result = {'code': 200, 'data': {'followed_id': followed_id, 'fans_id': fans_id, 'followed_no': followed_no,
-                                        'fans_no': fans_no}}
+                    followed.isActive = False
+                    followed.save()
+                    r.hincrby('user:%s' % followed_id, 'fans_count', -1)  # 被关注用户redis粉丝数减1
+                    r.hincrby('user:%s' % fans_id, 'follow_count', -1)  # 关注了他人的用户redis关注数减1
+            result = {'code':200,'data':'success'}
         return JsonResponse(result)
 
 # 自动发送生日邮件

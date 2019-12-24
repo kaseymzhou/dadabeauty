@@ -33,20 +33,17 @@ urlpatterns = [
     # http://127.0.0.1:8000/v1/user/person_description
     url(r'/person_description',views.PersonDescription.as_view()),
 
-    # http://127.0.0.1:8000/v1/user/fan
-    url(r'^/fan',views.FanView.as_view()),
+    # http://127.0.0.1:8000/v1/user/uid/fan
+    url(r'^/(\d+)/fan$',views.FansView.as_view()),
 
     # http://127.0.0.1:8000/v1/user/personindex/(user_id)
     url(r'^/personindex/(\d+)$',views.PersonalIndex.as_view()),
 
-    # http://127.0.0.1:8000/v1/user/focus/(user_id)
-    url(r'^/focus/(\d+)$',views.FocusView.as_view()),
+    # http://127.0.0.1:8000/v1/user/(user_id)/focus
+    url(r'^/(\d+)/focus$',views.FocusView.as_view()),
 
     # http://127.0.0.1:8000/v1/user/fan/(user_id)
     url(r'^/fans/(\d+)$',views.FansView.as_view()),
-
-    # http://127.0.0.1:8000/v1/user/collectpro/(user_id)
-    url(r'^/collectpro/(\d+)$',views.CollectProductView.as_view()),
 
     # http://127.0.0.1:8000/v1/user/collectblog/(user_id)
     url(r'^/collectblog/(\d+)$',views.CollectBlogView.as_view()),

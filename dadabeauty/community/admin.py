@@ -11,3 +11,8 @@ class TagManager(admin.ModelAdmin):
     # list_editable = ['name']
 # 注册管理类
 admin.site.register(models.Tag,TagManager)
+
+class ForwardManager(admin.ModelAdmin):
+    list_display = ['id','content','is_active','b_id','uid','create_time','update_time']
+    list_display_links = ['id']
+admin.site.register(models.Forward,ForwardManager)

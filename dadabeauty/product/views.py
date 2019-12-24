@@ -485,7 +485,7 @@ class CollectProducts(View):
                 return JsonResponse(result)
 
 # 产品评分
-class ProductScore(View):
+class PScore(View):
     @logging_check
     def post(self,request):
         data = request.body
@@ -507,4 +507,31 @@ class ProductScore(View):
             scorerecord = scorerecord[0]
             scorerecord.score = score
             scorerecord.save()
-            return JsonResponse({'code': 200, 'data': "修改评分成功，感谢支持～"})
+            return JsonResponse({'code': 201, 'data': "修改评分成功，感谢支持～"})
+
+# 用户个人主页'收藏商品'页面展示
+class CollectProductView(View):
+    @logging_check
+    def get(self,request,uid):
+        sku_info_list=[]
+        user_obj = UserProfile.objects.filter(id=uid)
+        collect_list = Collect.objects.filter(uid=user_obj[0],isActive=True).order_by('-updated_time')
+        if not collect_list:
+            return JsonResponse({'code':10117,'data':'你还没收藏产品哦'})
+        for item in collect_list:
+            per_sku_info = {}
+            per_sku_info['id'] = item.sku_id.id
+            per_sku_info['name']=item.sku_id.name
+            per_sku_info['sku_img']=str(item.sku_id.default_img_url)
+            collect_count = r.hget('product:%s'%item.sku_id.id,'collect')
+            if not collect_count:
+                collect_count = 0
+            else:
+                per_sku_info['collect_count']=collect_count.decode()
+            sku_info_list.append(per_sku_info)
+        result = {'code':200,'data':{
+                                    'uid':uid,
+                                    'sku_info':sku_info_list}
+                  }
+        return JsonResponse(result)
+

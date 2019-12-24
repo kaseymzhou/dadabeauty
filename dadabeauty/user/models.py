@@ -63,13 +63,11 @@ class Interests_User(models.Model):
     def __str__(self):
         return '%s_%s' % (self.uid, self.iid)
 
-class Follow(models.Model):
-    followed_id = models.OneToOneField(UserProfile,related_name='followed_id',default='')
-    fans_id = models.OneToOneField(UserProfile,related_name='fans_id',default='')
+class FollowUser(models.Model):
+    followed_id = models.ForeignKey(UserProfile,related_name='followed_id',default='')
+    fans_id = models.ForeignKey(UserProfile,related_name='fans_id',default='')
     created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
     isActive = models.BooleanField(default=True)
     class Meta:
         db_table = 'ufollow'
-    def __str__(self):
-        return '%s_%s'%(self.id,self.uid)
