@@ -1,7 +1,7 @@
+# 176.122.12.156:7001/dadabeauty/index.html --> 网站首页
+
 import redis
 from django.http import JsonResponse
-
-# Create your views here.
 from community.models import Blog, Tag, Forward, Comment, Reply, Collect, Image,Tag_blog
 from dadabeauty import settings
 from tools.logging_check import logging_check

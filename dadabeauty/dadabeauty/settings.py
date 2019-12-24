@@ -25,7 +25,7 @@ SECRET_KEY = '1y0r#)f9o20w)-r++@-d_r=uc%mz&jr3o8t9yw0e&+&k6z$u+a'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['176.122.12.156',]
 
 
 # Application definition
@@ -162,7 +162,7 @@ EMAIL_USE_TLS = True
 
 WEIBO_CLIENT_ID='467640713'
 WEIBO_CLIENT_SECRET='d5ba428ff942a99743e1fe10da4a199b'
-WEIBO_REDIRECT_URI='http://127.0.0.1:7001/dadabeauty/weibo_recall.html'
+WEIBO_REDIRECT_URI='http://176.122.12.156:7001/dadabeauty/weibo_recall.html'
 
 #项目目录下新建commomStatic目录，用来存放多个App之间公共的静态资源
 STATICFILES_DIRS = (os.path.join(BASE_DIR,'static'),)
@@ -200,5 +200,5 @@ STATIC_ROOT = '/tedu/dadabeauty/django_static'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
-PIC_URL = "http://127.0.0.1:8000{}".format(MEDIA_URL)
+PIC_URL = "http://176.122.12.156:8000{}".format(MEDIA_URL)
 
