@@ -1,4 +1,4 @@
-# 176.122.12.156:7001/dadabeauty/index.html --> 网站首页
+# 176.122.12.156:7001/dadabeauty/index.html --> dadabeauty网站首页
 
 import redis
 from django.http import JsonResponse
