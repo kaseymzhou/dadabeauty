@@ -36,17 +36,11 @@ urlpatterns = [
     # http://127.0.0.1:8000/v1/user/uid/fan
     url(r'^/(\d+)/fan$',views.FansView.as_view()),
 
-    # http://127.0.0.1:8000/v1/user/personindex/(user_id)
-    url(r'^/personindex/(\d+)$',views.PersonalIndex.as_view()),
-
     # http://127.0.0.1:8000/v1/user/(user_id)/focus
     url(r'^/(\d+)/focus$',views.FocusView.as_view()),
 
-    # http://127.0.0.1:8000/v1/user/fan/(user_id)
-    url(r'^/fans/(\d+)$',views.FansView.as_view()),
-
-    # http://127.0.0.1:8000/v1/user/collectblog/(user_id)
-    url(r'^/collectblog/(\d+)$',views.CollectBlogView.as_view()),
+    # http://127.0.0.1:8000/v1/user/addfan
+    url(r'^/addfan$',views.AddFan.as_view()),
 
     # http://127.0.0.1:8000/v1/user/personalinfo/(user_id)
     url(r'^/personalinfo/(\d+)$',views.ChangePersonalInfo.as_view()),

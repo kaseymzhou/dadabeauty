@@ -2,7 +2,7 @@
 
 import redis
 from django.http import JsonResponse
-from community.models import Blog, Tag, Forward, Comment, Reply, Collect, Image, Tag_blog
+from community.models import Blog, Tag, Forward, Comment, Reply, Collect, Image, Tag_blog,LikeCommunity
 from dadabeauty import settings
 from tools.logging_check import logging_check
 import json
@@ -141,79 +141,301 @@ def index(request):
         return JsonResponse(result)
 
 
-@logging_check
-def my_index(request):
-    # http://127.0.0.1:8000/v1/community/index?authorname=xxx  访问特定人的博客主页
-    if request.method == 'GET':
+
+class MyIndex(View):
+    @logging_check
+    def get(self,request):
+        # http://127.0.0.1:8000/v1/community/index?authorname=xxx  访问特定人的博客主页
         authorname = request.GET.get('authorname')
-        author_list = UserProfile.objects.filter(authorname=authorname)
+        author_list = UserProfile.objects.filter(username=authorname)
         if not author_list:
             result = {'code': 30108, 'error': '这个用户不存在 !'}
             return JsonResponse(result)
         author = author_list[0]
         blog_send_list = []
         # 取原博客
-        blog_list = Blog.objects.filter('is_active' == True, 'uid' == author.id).order_by('create_time')
-        get_first_blog(blog_list, blog_send_list)
-        # 取转发博客
-        forward_list = Forward.objects.filter('is_active' == True, 'uid' == author.id).order_by('create_time')
-        get_forward_blog(forward_list, blog_send_list)
-        # 按照时间排序
-        order_by_creatime(blog_send_list)
-        result = {'code': 200, 'data': blog_send_list}
+        blog_list = Blog.objects.filter(is_active=True, uid=author).order_by('-create_time')
+        if not blog_list:
+            return JsonResponse({'code':30111,'data':'你还没有发表文章哦'})
+        else:
+            for item in blog_list:
+                per_blog_info = {}
+                per_blog_info['title']=item.title
+                per_blog_info['content']=item.content[:50]+'……'
+                per_blog_info['bid'] = item.id
+                per_blog_info['create_time']=item.create_time
+                img_obj = Image.objects.filter(b_id=item)
+                if not img_obj:
+                    per_blog_info['img'] = ''
+                else:
+                    per_blog_info['img'] = settings.PIC_URL + str(img_obj[0].image)
+                    # 取点赞数
+                    like_count_exist = r.hexists('blog:%s' % item.id, 'like')
+                    if not like_count_exist:
+                        like_count = 0
+                    else:
+                        like_count = r.hget('blog:%s' % item.id, 'like')
+                        like_count = like_count.decode()
+                    per_blog_info['like_count'] = like_count
+                    # 取转发数
+                    forward_count_exist = r.hexists('blog:%s' % item.id, 'forward')
+                    if not forward_count_exist:
+                        forward_count = 0
+                    else:
+                        forward_count = r.hget('blog:%s' % item.id, 'forward')
+                        forward_count = forward_count.decode()
+                    per_blog_info['forward_count'] = forward_count
+                    # 取收藏数数
+                    collect_count_exist = r.hexists('blog:%s' % item.id, 'collect')
+                    if not collect_count_exist:
+                        collect_count = 0
+                    else:
+                        collect_count = r.hget('blog:%s' % item.id, 'collect')
+                        collect_count = collect_count.decode()
+                    per_blog_info['collect_count'] = collect_count
+                    # 取评论数
+                    comment_count_exist = r.hexists('blog:%s' % item.id, 'comment')
+                    if not comment_count_exist:
+                        comment_count = 0
+                    else:
+                        comment_count = r.hget('blog:%s' % item.id.id, 'comment')
+                        comment_count = comment_count.decode()
+                    per_blog_info['comment_count'] = comment_count
+                    blog_send_list.append(per_blog_info)
+        result = {'code':200,'data':blog_send_list}
         return JsonResponse(result)
 
-    if request.method == 'POST':
+        #get_first_blog(blog_list, blog_send_list)
+        # 取转发博客
+        #forward_list = Forward.objects.filter(is_active=True, uid=author).order_by('create_time')
+        #get_forward_blog(forward_list, blog_send_list)
+        # 按照时间排序
+        #order_by_creatime(blog_send_list)
+        #result = {'code': 200, 'data': blog_send_list}
+
+    def post(self,request):
         result = {'code': 30107, 'error': '请使用GET请求!'}
         return JsonResponse(result)
 
+class OtherIndex(View):
+    def get(self, request):
+        # http://127.0.0.1:8000/v1/community/index?user=xxx  访问特定人的博客主页
+        user = request.GET.get('user')
+        user_list = UserProfile.objects.filter(username=user)
+        if not user_list:
+            result = {'code': 30108, 'error': '这个用户不存在 !'}
+            return JsonResponse(result)
+        user = user_list[0]
+        user_info ={}
+        user_info['username']=user.username
+        user_info['uid']=user.id
+        user_info['description']=user.description
+        user_info['img'] = settings.PIC_URL + str(user.profile_image_url)
+        # 取原博客
+        blog_send_list =[]
+        blog_list = Blog.objects.filter(is_active=True, uid=user).order_by('-create_time')
+        if not blog_list:
+            return JsonResponse({'code': 30111, 'data': '你还没有发表文章哦'})
+        else:
+            for item in blog_list:
+                per_blog_info = {}
+                per_blog_info['title'] = item.title
+                per_blog_info['content'] = item.content[:50] + '……'
+                per_blog_info['bid'] = item.id
+                per_blog_info['create_time'] = item.create_time
+                img_obj = Image.objects.filter(b_id=item)
+                if not img_obj:
+                    per_blog_info['img'] = ''
+                else:
+                    per_blog_info['img'] = settings.PIC_URL + str(img_obj[0].image)
+                    # 取点赞数
+                    like_count_exist = r.hexists('blog:%s' % item.id, 'like')
+                    if not like_count_exist:
+                        like_count = 0
+                    else:
+                        like_count = r.hget('blog:%s' % item.id, 'like')
+                        like_count = like_count.decode()
+                    per_blog_info['like_count'] = like_count
+                    # 取转发数
+                    forward_count_exist = r.hexists('blog:%s' % item.id, 'forward')
+                    if not forward_count_exist:
+                        forward_count = 0
+                    else:
+                        forward_count = r.hget('blog:%s' % item.id, 'forward')
+                        forward_count = forward_count.decode()
+                    per_blog_info['forward_count'] = forward_count
+                    # 取收藏数数
+                    collect_count_exist = r.hexists('blog:%s' % item.id, 'collect')
+                    if not collect_count_exist:
+                        collect_count = 0
+                    else:
+                        collect_count = r.hget('blog:%s' % item.id, 'collect')
+                        collect_count = collect_count.decode()
+                    per_blog_info['collect_count'] = collect_count
+                    # 取评论数
+                    comment_count_exist = r.hexists('blog:%s' % item.id, 'comment')
+                    if not comment_count_exist:
+                        comment_count = 0
+                    else:
+                        comment_count = r.hget('blog:%s' % item.id, 'comment')
+                        comment_count = comment_count.decode()
+                    per_blog_info['comment_count'] = comment_count
+                    blog_send_list.append(per_blog_info)
+        result = {'code': 200, 'data': blog_send_list,'user':user_info}
+        return JsonResponse(result)
 
-@logging_check
-def my_index_collect(request):
-    # http://127.0.0.1:8000/v1/community/index_collect?authorname=xxx  访问特定人的收藏列表
-    if request.method == 'GET':
+
+class MyIndexCollect(View):
+    @logging_check
+    def get(self,request):
+    # http://127.0.0.1:8000/v1/community/index_collect?authorname=xxx  访问我的收藏列表
         authorname = request.GET.get('authorname')
-        author_list = UserProfile.objects.filter(authorname=authorname)
+        author_list = UserProfile.objects.filter(username=authorname)
         if not author_list:
             result = {'code': 30108, 'error': '这个用户不存在 !'}
             return JsonResponse(result)
         author = author_list[0]
-        blog_send_list = []
+        collect_send_list = []
         # 取收藏博客
-        collect_list = Collect.objects.filter('is_active' == True, 'uid' == author.id).order_by('create_time')
-        get_collect_blog(collect_list, blog_send_list)
-        result = {'code': 200, 'data': blog_send_list}
+        collect_list = Collect.objects.filter(is_active=True, uid=author).order_by('-create_time')
+        if not collect_list:
+            return JsonResponse({'code': 30112, 'data': '你还没有收藏文章哦'})
+        else:
+            for item in collect_list:
+                per_blog_info = {}
+                per_blog_info['title'] = item.b_id.title
+                per_blog_info['content'] = item.b_id.content[:50] + '……'
+                per_blog_info['bid'] = item.b_id.id
+                per_blog_info['create_time'] = item.b_id.create_time
+                img_obj = Image.objects.filter(b_id=item.b_id)
+                if not img_obj:
+                    per_blog_info['img'] = ''
+                else:
+                    per_blog_info['img'] = settings.PIC_URL + str(img_obj[0].image)
+                    # 取点赞数
+                    like_count_exist = r.hexists('blog:%s' % item.b_id.id, 'like')
+                    if not like_count_exist:
+                        like_count = 0
+                    else:
+                        like_count = r.hget('blog:%s' % item.b_id.id, 'like')
+                        like_count = like_count.decode()
+                    per_blog_info['like_count'] = like_count
+                    # 取转发数
+                    forward_count_exist = r.hexists('blog:%s' % item.b_id.id, 'forward')
+                    if not forward_count_exist:
+                        forward_count = 0
+                    else:
+                        forward_count = r.hget('blog:%s' % item.b_id.id, 'forward')
+                        forward_count = forward_count.decode()
+                    per_blog_info['forward_count'] = forward_count
+                    # 取收藏数数
+                    collect_count_exist = r.hexists('blog:%s' % item.b_id.id, 'collect')
+                    if not collect_count_exist:
+                        collect_count = 0
+                    else:
+                        collect_count = r.hget('blog:%s' % item.b_id.id, 'collect')
+                        collect_count = collect_count.decode()
+                    per_blog_info['collect_count'] = collect_count
+                    # 取评论数
+                    comment_count_exist = r.hexists('blog:%s' % item.b_id.id, 'comment')
+                    if not comment_count_exist:
+                        comment_count = 0
+                    else:
+                        comment_count = r.hget('blog:%s' % item.b_id.id, 'comment')
+                        comment_count = comment_count.decode()
+                    per_blog_info['comment_count'] = comment_count
+                    collect_send_list.append(per_blog_info)
+        result = {'code': 200, 'data': collect_send_list}
         return JsonResponse(result)
-    if request.method == 'POST':
+    def post(self,request):
         result = {'code': 30107, 'error': '请使用GET请求!'}
         return JsonResponse(result)
 
 
-@logging_check
-def detail_blog(request):
-    id = request.GET.get('blogid')
-    userme = request.myuser
-    if request.method == 'POST':
-        result = {'code': 30107, 'error': '请使用GET请求!'}
-        return JsonResponse(result)
-
-    if request.method == 'DELETE':
-        # http://127.0.0.1:8000/v1/community/detail?blogid=xxx
-        try:
-            blog = Blog.objects.get(id=id)
-            blog.is_active = False
-            blog.save()
-        except Exception as e:
-            print('删除博客错误\n', e)
-            result = {'code': 30108, 'error': '请给我博客id!'}
+class OtherIndexCollect(View):
+    def get(self, request):
+        # http://127.0.0.1:8000/v1/community/index_collect?user=xxx  访问特定人的收藏列表
+        user = request.GET.get('user')
+        user_list = UserProfile.objects.filter(username=user)
+        if not user_list:
+            result = {'code': 30108, 'error': '这个用户不存在 !'}
             return JsonResponse(result)
-        result = {'code': 200, 'username': userme}
+        user = user_list[0]
+        user_info = {}
+        user_info['username'] = user.username
+        user_info['uid'] = user.id
+        user_info['description'] = user.description
+        user_info['img'] = settings.PIC_URL + str(user.profile_image_url)
+        collect_send_list = []
+        # 取收藏博客
+        collect_list = Collect.objects.filter(is_active=True, uid=user).order_by('-create_time')
+        if not collect_list:
+            return JsonResponse({'code': 30112, 'data': '你还没有收藏文章哦'})
+        else:
+            for item in collect_list:
+                per_blog_info = {}
+                per_blog_info['title'] = item.b_id.title
+                per_blog_info['content'] = item.b_id.content[:50] + '……'
+                per_blog_info['bid'] = item.b_id.id
+                per_blog_info['create_time'] = item.b_id.create_time
+                img_obj = Image.objects.filter(b_id=item.b_id)
+                if not img_obj:
+                    per_blog_info['img'] = ''
+                else:
+                    per_blog_info['img'] = settings.PIC_URL + str(img_obj[0].image)
+                    # 取点赞数
+                    like_count_exist = r.hexists('blog:%s' % item.b_id.id, 'like')
+                    if not like_count_exist:
+                        like_count = 0
+                    else:
+                        like_count = r.hget('blog:%s' % item.b_id.id, 'like')
+                        like_count = like_count.decode()
+                    per_blog_info['like_count'] = like_count
+                    # 取转发数
+                    forward_count_exist = r.hexists('blog:%s' % item.b_id.id, 'forward')
+                    if not forward_count_exist:
+                        forward_count = 0
+                    else:
+                        forward_count = r.hget('blog:%s' % item.b_id.id, 'forward')
+                        forward_count = forward_count.decode()
+                    per_blog_info['forward_count'] = forward_count
+                    # 取收藏数数
+                    collect_count_exist = r.hexists('blog:%s' % item.b_id.id, 'collect')
+                    if not collect_count_exist:
+                        collect_count = 0
+                    else:
+                        collect_count = r.hget('blog:%s' % item.b_id.id, 'collect')
+                        collect_count = collect_count.decode()
+                    per_blog_info['collect_count'] = collect_count
+                    # 取评论数
+                    comment_count_exist = r.hexists('blog:%s' % item.b_id.id, 'comment')
+                    if not comment_count_exist:
+                        comment_count = 0
+                    else:
+                        comment_count = r.hget('blog:%s' % item.b_id.id, 'comment')
+                        comment_count = comment_count.decode()
+                    per_blog_info['comment_count'] = comment_count
+                    collect_send_list.append(per_blog_info)
+        result = {'code': 200, 'data': collect_send_list,'user':user_info}
         return JsonResponse(result)
 
-    if request.method == 'GET':
+    def post(self, request):
+        result = {'code': 30107, 'error': '请使用GET请求!'}
+        return JsonResponse(result)
+
+
+
+class DeatilBlog(View):
+    def post(self,request):
+        result = {'code': 30107, 'error': '请使用GET请求!'}
+        return JsonResponse(result)
+
+    def get(self,request):
         # http://127.0.0.1:8000/v1/community/detail?blogid=xxx
+        id = request.GET.get('blogid')
         try:
-            blog = Blog.objects.get(id=id)
+            blog = Blog.objects.filter(id=id)
+            blog = blog[0]
         except Exception as e:
             print('获得博客错误\n', e)
             result = {'code': 30108, 'error': '请给我博客id!'}
@@ -222,82 +444,97 @@ def detail_blog(request):
         result = get_detail_blog(blog)
         return JsonResponse(result)
 
+    @logging_check
+    def delete(self,request):
+        # http://127.0.0.1:8000/v1/community/detail?blogid=xxx
+        id = request.GET.get('blogid')
+        try:
+            blog = Blog.objects.get(id=id)
+            blog.is_active = False
+            blog.save()
+        except Exception as e:
+            print('删除博客错误\n', e)
+            result = {'code': 30108, 'error': '请给我博客id!'}
+            return JsonResponse(result)
+        result = {'code': 200}
+        return JsonResponse(result)
 
-@logging_check
-def forward_blog(request):
-    if request.method == 'GET':
+
+
+
+class ForwardBlog(View):
+    @logging_check
+    def get(self,request):
         result = {'code': 30109, 'error': '请给我POST请求!'}
         return JsonResponse(result)
 
-    if request.method == 'POST':
+    @logging_check
+    def post(self,request):
         # http://127.0.0.1:8000/v1/community/forward?authorname=xxx
         author_name = request.GET.get('authorname')
-        author = request.myuser
-        if author.username != author_name:
-            result = {'code': 30101, 'error': '非本人操作!'}
-            return JsonResponse(result)
         json_str = request.body
         json_obj = json.loads(json_str)
         content = json_obj.get('content')
         blog_id = json_obj.get('id')
-        blog_object = Blog.objects.get(id=blog_id)
-        Forward.objects.create(content=content, uid=author, b_id=blog_object)
+        blog_object = Blog.objects.filter(id=blog_id)
+        user_object = UserProfile.objects.filter(username=author_name)
+        Forward.objects.create(content=content, uid=user_object[0], b_id=blog_object[0])
         # 统计转发数
         forward_count_exist = r.hexists('blog:%s' % blog_id, 'forward')
-        if forward_count_exist is False:
+        if not forward_count_exist:
             r.hset('blog:%s' % blog_id, 'forward', 0)
         r.hincrby('blog:%s' % blog_id, 'forward', 1)
-        result = {'code': 200, 'username': author}
+        result = {'code': 200, 'data':'转发成功'}
         return JsonResponse(result)
 
 
-@logging_check
-def like_blog(request):
-    if request.method == 'GET':
-        # http://127.0.0.1:8000/v1/community/like?authorname=xxx&blogid=xxx
+
+class LikeBlog(View):
+    @logging_check
+    def get(self,request):
+    # http://127.0.0.1:8000/v1/community/like?authorname=xxx&blogid=xxx
         author_name = request.GET.get('authorname')
-        author = request.myuser
-        if author.username != author_name:
-            result = {'code': 30101, 'error': '非本人操作!'}
-            return JsonResponse(result)
         blog_id = request.GET.get('blogid')
-        # 统计转发数'blog:%s' % item.id, 'like'
-        like_count_exist = r.hexists('blog:%s' % blog_id, 'like')
-        if like_count_exist is False:
-            r.hset('blog:%s' % blog_id, 'like', 0)
-        r.hincrby('blog:%s' % blog_id, 'like', 1)
-        result = {'code': 200, 'username': author}
-        return JsonResponse(result)
-    else:
+        user_obj = UserProfile.objects.filter(username=author_name)
+        blog_obj = Blog.objects.filter(id=blog_id)
+        like_record = LikeCommunity.objects.filter(uid=user_obj[0],blog_id=blog_obj[0])
+        if not like_record:
+            # 点赞
+            LikeCommunity.objects.create(uid=user_obj[0],blog_id=blog_obj[0])
+            # 统计转发数'blog:%s' % item.id, 'like'
+            like_count_exist = r.hexists('blog:%s' % blog_id, 'like')
+            if not like_count_exist:
+                r.hset('blog:%s' % blog_id, 'like', 0)
+            r.hincrby('blog:%s' % blog_id, 'like', 1)
+            result = {'code': 200,'data':'点赞成功'}
+            return JsonResponse(result)
+        else:
+            like_record = like_record[0]
+            # 取消点赞
+            if like_record.is_active == True:
+                like_record.is_active = False
+                like_record.save()
+                r.hincrby('blog:%s' % blog_id, 'like', -1)
+                result = {'code': 201, 'data': '取消点赞成功'}
+                return JsonResponse(result)
+            # 重新点赞
+            else:
+                like_record.is_active = True
+                like_record.save()
+                r.hincrby('blog:%s' % blog_id, 'like', 1)
+                result = {'code': 200, 'data': '点赞成功'}
+                return JsonResponse(result)
+
+    @logging_check
+    def post(self,request):
         result = {'code': 30107, 'error': '请使用GET请求!'}
         return JsonResponse(result)
 
 
-@logging_check
-def unlike(request):
-    if request.method == 'GET':
-        # http://127.0.0.1:8000/v1/community/unlike?authorname=xxx&blogid=xxx
-        author_name = request.GET.get('authorname')
-        author = request.myuser
-        if author.username != author_name:
-            result = {'code': 30101, 'error': '非本人操作!'}
-            return JsonResponse(result)
-        blog_id = request.GET.get('blogid')
-        # 统计转发数
-        like_count_exist = r.hexists('blog:%s' % blog_id, 'like')
-        if like_count_exist is False:
-            r.hset('blog:%s' % blog_id, 'like', 0)
-        r.hincrby('blog:%s' % blog_id, 'like', -1)
-        result = {'code': 200, 'username': author}
-        return JsonResponse(result)
-    else:
-        result = {'code': 30107, 'error': '请使用GET请求!'}
-        return JsonResponse(result)
 
-
-@logging_check
-def comment(request):
-    if request.method == 'POST':
+class BlogComment(View):
+    @logging_check
+    def post(self,request):
         data = request.body
         if not data:
             result = {'code': '30111', 'error': '请填写评论'}
@@ -306,18 +543,21 @@ def comment(request):
         blog_id = json_obj.get('blog_id')
         content = json_obj.get('content')
         uid = json_obj.get('uid')
-        Comment.objects.create(content=content, uid=uid, b_id=blog_id)
+        user_obj = UserProfile.objects.filter(id=uid)
+        blog_obj = Blog.objects.filter(id=blog_id)
+        Comment.objects.create(content=content, uid=user_obj[0], b_id=blog_obj[0])
 
         # 判断是否在redis中曾经有设立过计数key
         blog_comment_count = r.hexists('blog:%s' % blog_id, 'comment')
-        if blog_comment_count is False:
+        if not blog_comment_count:
             r.hset('blog:%s' % blog_id, 'comment', 0)
         # redis做评论计数
         r.hincrby('blog:%s' % blog_id, 'comment', 1)
         result = {'code': 200, 'data': '评论成功'}
         return JsonResponse(result)
 
-    if request.method == 'DELETE':
+    @logging_check
+    def delete(self,request):
         data = request.body
         if not data:
             result = {'code': '30112', 'error': '删除失败'}
@@ -339,9 +579,9 @@ def comment(request):
 
 
 # 评论的回复
-@logging_check
-def reply(request):
-    if request.method == 'POST':
+class BlogReply(View):
+    @logging_check
+    def post(self,request):
         data = request.body
         if not data:
             result = {'code': '30114', 'error': '请填写回复信息'}
@@ -351,17 +591,17 @@ def reply(request):
         uid = json_obj.get('uid')
         c_id = json_obj.get('c_id')
         # mysql数据库录入
-        Reply.objects.create(content=content, uid=uid, c_id=c_id)
+        user_obj = UserProfile.objects.filter(id=uid)
+        comment_obj = Comment.objects.filter(id=c_id)
+        Reply.objects.create(content=content, uid=user_obj[0], c_id=comment_obj[0])
         # redis做评论计数
-        comments = Comment.objects.filter(id=c_id)
-        if not comments:
-            return JsonResponse({'code': '30113', 'error': '无法删除该评论'})
-        comment = comments[0]
-        blog_id = comment.b_id
+        blog_id = comment_obj[0].b_id.id
         r.hincrby('blog:%s' % blog_id, 'comment', 1)
         result = {'code': 200, 'data': '回复成功'}
         return JsonResponse(result)
-    if request.method == 'DELETE':
+
+    @logging_check
+    def delete(self,request):
         data = request.body
         if not data:
             result = {'code': '30115', 'error': '删除失败'}
@@ -386,29 +626,42 @@ def reply(request):
         return JsonResponse(result)
 
 
-@logging_check
-def collect_blog(request):
-    if request.method == 'POST':
+class CollectBlogs(View):
+    @logging_check
+    def post(self,request):
         result = {'code': 30117, 'error': '请给我GET请求!'}
         return JsonResponse(result)
 
-    if request.method == 'GET':
-        # http://127.0.0.1:8000/v1/community/collect?authorname=xxx,id=xxx
+    @logging_check
+    def get(self,request):
+        # http://127.0.0.1:8000/v1/community/collect?authorname=xxx&id=xxx
         author_name = request.GET.get('authorname')
-        author = request.myuser
-        if author.username != author_name:
-            result = {'code': 30101, 'error': '非本人操作!'}
-            return JsonResponse(result)
         blog_id = request.GET.get('id')
-        blog_object = Blog.objects.get(id=blog_id)
-        Collect.objects.create(uid=author, b_id=blog_object)
-        # 统计收藏数
-        collect_count_exist = r.hexists('blog:%s' % blog_id, 'collect')
-        if collect_count_exist is False:
-            r.hset('blog:%s' % blog_id, 'collect', 0)
-        r.hincrby('blog:%s' % blog_id, 'collect', 1)
-        result = {'code': 200, 'username': author}
-        return JsonResponse(result)
+        user_obj = UserProfile.objects.filter(username=author_name)
+        blog_object = Blog.objects.filter(id=blog_id)
+        collect_record = Collect.objects.filter(uid=user_obj[0],b_id=blog_object[0])
+        if not collect_record:
+            Collect.objects.create(uid=user_obj[0],b_id=blog_object[0])
+            collect_count_exist = r.hexists('blog:%s' % blog_id, 'collect')
+            if not collect_count_exist:
+                r.hset('blog:%s' % blog_id, 'collect', 0)
+            r.hincrby('blog:%s' % blog_id, 'collect', 1)
+            result = {'code': 200, 'data': '收藏成功'}
+            return JsonResponse(result)
+        else:
+            collect_record = collect_record[0]
+            if collect_record.is_active==True:
+                collect_record.is_active=False
+                collect_record.save()
+                r.hincrby('blog:%s' % blog_id, 'collect', -1)
+                result = {'code': 201, 'data': '取消收藏成功'}
+                return JsonResponse(result)
+            else:
+                collect_record.is_active = True
+                collect_record.save()
+                r.hincrby('blog:%s' % blog_id, 'collect', 1)
+                result = {'code': 200, 'data': '收藏成功'}
+                return JsonResponse(result)
 
 
 # 取原博客
@@ -474,9 +727,10 @@ def get_first_blog(blog_list, blog_send_list):
 def get_detail_blog(blog):
     # 获取用户名
     data = {}
-    data['username'] = blog.userprofile.username
+    data['username'] = blog.uid.username
+    data['profile_img'] = settings.PIC_URL + str(blog.uid.profile_image_url)
     # 获取题目
-    data['title'] = blog['title']
+    data['title'] = blog.title
     tags_object_list = Tag_blog.objects.filter(blog_id_fk=blog)
     total_tags_list = []
     # 取tag
@@ -485,15 +739,16 @@ def get_detail_blog(blog):
         total_tags_list.append(per_tag_name)
     data['tags'] = total_tags_list
     # 取内容
-    data['content'] = blog['content']
+    data['content'] = blog.content
     # 取时间
-    data['crete_time'] = blog['create_time']
+    data['create_time'] = blog.create_time
     # 取点赞数
     like_count_exist = r.hexists('blog:%s' % blog.id, 'like')
     if not like_count_exist:
         like_count = 0
     else:
         like_count = r.hget('blog:%s' % blog.id, 'like')
+        like_count = like_count.decode()
     data['like_count'] = like_count
     # 取转发数
     forward_count = r.hexists('blog:%s' % blog.id, 'forward')
@@ -501,6 +756,7 @@ def get_detail_blog(blog):
         forward_count = 0
     else:
         forward_count = r.hget('blog:%s' % blog.id, 'forward')
+        forward_count = forward_count.decode()
     data['forward_count'] = forward_count
     # 取收藏数数
     collect_count_exist = r.hexists('blog:%s' % blog.id, 'collect')
@@ -508,6 +764,7 @@ def get_detail_blog(blog):
         collect_count = 0
     else:
         collect_count = r.hget('blog:%s' % blog.id, 'collect')
+        collect_count = collect_count.decode()
     data['collect_count'] = collect_count
     # 取评论数
     comment_count_exist = r.hexists('blog:%s' % blog.id, 'comment')
@@ -515,6 +772,7 @@ def get_detail_blog(blog):
         comment_count = 0
     else:
         comment_count = r.hget('blog:%s' % blog.id, 'comment')
+        comment_count = comment_count.decode()
     data['comment_count'] = comment_count
     # 取图片
     images = Image.objects.filter(b_id=blog)
@@ -523,43 +781,40 @@ def get_detail_blog(blog):
         image_list.append(settings.PIC_URL + str(item.image))
     data['img'] = image_list
     # 取评论
-    comment_details = {}
     per_comment_detail_dic = []
-    comments = Comment.objects.filter(b_id=id, isActive=True)
+    comments = Comment.objects.filter(b_id=blog, is_active=True)
     for item in comments:
         one_comment_info = {}
         c_id = item.id
         one_comment_info['comment_id'] = c_id
-        uid = item.uid
+        uid = item.uid.id
         users = UserProfile.objects.filter(id=uid)
         if not users:
             return JsonResponse({'code': 30112, 'data': '查看该用户评论失败'})
         comment_username = users[0].username
         one_comment_info['comment_username'] = comment_username
         comment_user_profile = users[0].profile_image_url
-        one_comment_info['comment_user_profile'] = comment_user_profile
-        comment_user_profile['comment_content'] = item.content
-        # 获取每条评论对应的回复
-        replies = Reply.objects.filter(c_id=c_id, isActive=True)
-        replies_dic = []
-        i = 1
+        one_comment_info['comment_user_profile'] = settings.PIC_URL + str(comment_user_profile)
+        one_comment_info['comment_content'] = item.content
+        one_comment_info['create_time'] = item.create_time
 
+        # 获取每条评论对应的回复
+        replies = Reply.objects.filter(c_id=item, is_active=True)
+        replies_dic = []
         for item in replies:
-            one_reply_info = {}
             one_reply_info_detail = {}
-            users = UserProfile.objects.filter(id=item.uid)
+            users = UserProfile.objects.filter(id=item.uid.id)
             reply_username = users[0].username
-            reply_profile = users[0].profile_image_url
+            reply_profile = settings.PIC_URL + str(users[0].profile_image_url)
             reply_content = item.content
             one_reply_info_detail['reply_username'] = reply_username
             one_reply_info_detail['reply_profile'] = reply_profile
             one_reply_info_detail['reply_content'] = reply_content
-            one_reply_info['comment_reply_%s' % (i)] = one_reply_info_detail
-            replies_dic.append(one_reply_info['comment_reply_%s' % (i)])
-            i += 1
+            one_reply_info_detail['create_time'] = item.create_time
+            replies_dic.append(one_reply_info_detail)
         one_comment_info['comment_replies'] = replies_dic
         per_comment_detail_dic.append(one_comment_info)
-    comment_details['per_comment_detail'] = per_comment_detail_dic
+    data['comment_detail'] = per_comment_detail_dic
     # 返回数据
     result = {'code': 200, 'data': data}
     return result

@@ -106,3 +106,16 @@ class Forward(models.Model):
 
     def __str__(self):
         return 'forward_content:%s' % (self.content)
+
+class LikeCommunity(models.Model):
+    uid = models.ForeignKey(UserProfile)
+    blog_id = models.ForeignKey(Blog)
+    created_time = models.DateTimeField(auto_now_add=True)
+    updated_time = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'clike'
+
+    def __str__(self):
+        return 'id :%s' % (self.id)
