@@ -17,5 +17,6 @@ urlpatterns = [
     # http://127.0.0.1:8000/v1/community/index_collect?authorname=xxx
     url(r'^/index_collect$',views.MyIndexCollect.as_view()),
     url(r'^/others_index_collect$',views.OtherIndexCollect.as_view()),
-    url(r'^/others_index$',views.OtherIndex.as_view())
+    url(r'^/others_index$',views.OtherIndex.as_view()),
+    url(r'^/delete_blog$',views.DeleteBlog.as_view())
 ]

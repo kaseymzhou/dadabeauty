@@ -51,7 +51,11 @@ urlpatterns = [
     # http://127.0.0.1:8000/v1/user/test_celery
     # url(r'^/test_celery$',views.ChangePassword.as_view()),
 
+    # http://127.0.0.1:8000/v1/user/other_fan/(username)
+    url(r'^/other_fan/(.*)$',views.OthersFansView.as_view()),
 
+    # http://127.0.0.1:8000/v1/user/other_follow/(username)
+    url(r'^/others_follow/(.*)$',views.OthersFocusView.as_view()),
 
 
 ]

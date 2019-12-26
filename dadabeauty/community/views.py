@@ -8,7 +8,7 @@ from tools.logging_check import logging_check
 import json
 import hashlib
 from django.views.generic.base import View
-
+from tools.datetimeseri import JsonCustomEncoder
 from user.models import UserProfile
 
 r = redis.Redis(host='127.0.0.1', port=6379, db=1)
@@ -198,7 +198,7 @@ class MyIndex(View):
                     if not comment_count_exist:
                         comment_count = 0
                     else:
-                        comment_count = r.hget('blog:%s' % item.id.id, 'comment')
+                        comment_count = r.hget('blog:%s' % item.id, 'comment')
                         comment_count = comment_count.decode()
                     per_blog_info['comment_count'] = comment_count
                     blog_send_list.append(per_blog_info)
@@ -213,9 +213,16 @@ class MyIndex(View):
         #order_by_creatime(blog_send_list)
         #result = {'code': 200, 'data': blog_send_list}
 
-    def post(self,request):
-        result = {'code': 30107, 'error': '请使用GET请求!'}
-        return JsonResponse(result)
+class DeleteBlog(View):
+    @logging_check
+    def get(self,request):
+        # http://127.0.0.1:8000/v1/community/index?bid=xxx
+        bid = request.GET.get('bid')
+        blog_obj = Blog.objects.filter(id=bid)
+        blog_obj = blog_obj[0]
+        blog_obj.is_active = False
+        blog_obj.save()
+        return JsonResponse({'code':200,'data':'删除成功'})
 
 class OtherIndex(View):
     def get(self, request):

@@ -19,3 +19,11 @@ class FollowManager(admin.ModelAdmin):
     list_display_links = ['id']
 # 注册管理类
 admin.site.register(models.FollowUser,FollowManager)
+
+class UserProfileManager(admin.ModelAdmin):
+    # 在管理后台显示的字段
+    list_display = ['id','username','password','created_time']
+    # 指定跳转在详情页面的字段
+    list_display_links = ['id']
+# 注册管理类
+admin.site.register(models.UserProfile,UserProfileManager)

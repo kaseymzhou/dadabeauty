@@ -535,3 +535,37 @@ class CollectProductView(View):
                   }
         return JsonResponse(result)
 
+# 他人主页“收藏商品”页面展示
+# http://176.122.12.156:8000/v1/community/others_collect_product/(username)
+class OthersCollectProductView(View):
+    def get(self,request,username):
+        sku_info_list=[]
+        user_obj = UserProfile.objects.filter(username=username)
+        collect_list = Collect.objects.filter(uid=user_obj[0],isActive=True).order_by('-updated_time')
+        if not collect_list:
+            return JsonResponse({'code':10117,
+                                 'data':{'uid':user_obj[0].id,
+                                        'username':username,
+                                        'profile_img':settings.PIC_URL + str(user_obj[0].profile_image_url),
+                                        'description':user_obj[0].description}
+                                 })
+        for item in collect_list:
+            per_sku_info = {}
+            per_sku_info['id'] = item.sku_id.id
+            per_sku_info['name']=item.sku_id.name
+            per_sku_info['sku_img']=str(item.sku_id.default_img_url)
+            collect_count = r.hget('product:%s'%item.sku_id.id,'collect')
+            if not collect_count:
+                collect_count = 0
+            else:
+                per_sku_info['collect_count']=collect_count.decode()
+            sku_info_list.append(per_sku_info)
+        result = {'code':200,'data':{
+                                    'uid':user_obj[0].id,
+                                    'username':username,
+                                    'profile_img':settings.PIC_URL + str(user_obj[0].profile_image_url),
+                                    'description':user_obj[0].description,
+                                    'sku_info':sku_info_list}
+                  }
+        return JsonResponse(result)
+

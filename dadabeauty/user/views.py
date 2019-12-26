@@ -90,6 +90,65 @@ class FansView(View):
                   }
         return JsonResponse(result)
 
+# 他人主页'ta的粉丝'页面展示
+class OthersFansView(View):
+    def get(self,request,username):
+        user_object = UserProfile.objects.filter(username=username)
+        fans_count = r.hget('user:%s'%user_object[0].id, 'fans_count')
+        if not fans_count:
+            fans_count = 0
+        else:
+            fans_count = fans_count.decode()
+        fans = FollowUser.objects.filter(followed_id=user_object[0], isActive=True).order_by('-updated_time')
+        if not fans:
+            return JsonResponse({'code': 10116, 'data': '你还没有粉丝哦'})
+        fans_info = []
+        for item in fans:
+            per_fans_info = {}
+            per_fans_info['id'] = item.fans_id.id
+            per_fans_info['profile'] = settings.PIC_URL+str(item.fans_id.profile_image_url)
+            per_fans_info['username'] = item.fans_id.username
+            per_fans_info['description'] = item.fans_id.description
+            fans_info.append(per_fans_info)
+        result = {'code': 200, 'data': {
+                                        'uid': user_object[0].id,
+                                        'username':username,
+                                        'profile_img':settings.PIC_URL+str(user_object[0].profile_image_url),
+                                        'description':user_object[0].description,
+                                        'fans_count': fans_count,
+                                        'fans_info': fans_info}
+                  }
+        return JsonResponse(result)
+
+# 他人主页'ta的关注'页面展示
+class OthersFocusView(View):
+    def get(self,request,username):
+        user_object = UserProfile.objects.filter(username=username)
+        follow_count = r.hget('user:%s'%user_object[0].id,'follow_count')
+        if not follow_count:
+            follow_count = 0
+        else:
+            follow_count = follow_count.decode()
+        follows = FollowUser.objects.filter(fans_id=user_object[0],isActive=True).order_by('-updated_time')
+        if not follows:
+            return JsonResponse({'code':10115,'data':'你还没有关注过别人哦'})
+        follow_info = []
+        for item in follows:
+            per_follow_info = {}
+            per_follow_info['id'] = item.followed_id.id
+            per_follow_info['username'] = item.followed_id.username
+            per_follow_info['profile'] = settings.PIC_URL+str(item.followed_id.profile_image_url)
+            per_follow_info['description']=item.followed_id.description
+            follow_info.append(per_follow_info)
+        result = {'code':200,'data':{
+                                    'uid':user_object[0].id,
+                                    'username': username,
+                                    'profile_img': settings.PIC_URL + str(user_object[0].profile_image_url),
+                                    'description': user_object[0].description,
+                                    'follow_count':follow_count,
+                                    'follow_info':follow_info}
+                  }
+        return JsonResponse(result)
 
 # 用户个人主页'修改个人基本信息'页面展示
 class ChangePersonalInfo(View):
@@ -98,11 +157,15 @@ class ChangePersonalInfo(View):
         # 返给前端当前用户的基本信息
         user_info = UserProfile.objects.filter(id=uid)
         user_info = user_info[0]
-        uid = user_info.uid
+        uid = user_info.id
         username = user_info.username
         email = user_info.email
         phone = user_info.phone
         gender = user_info.gender
+        if gender == 1:
+            gender = '男'
+        elif gender == 2:
+            gender = '女'
         birthday = user_info.birthday
         return JsonResponse({'code': 200,'data':{
                                                  'uid':uid,
@@ -113,41 +176,41 @@ class ChangePersonalInfo(View):
                                                  'birthday':birthday}
                              })
     @logging_check
-    def post(self, request):
+    def post(self, request,uid):
         # 接收前端返回来的最新用户信息
         data = request.body
         if not data:
             result = {'code': '10119', 'error': '请提供完整信息'}
             return JsonResponse(result)
         json_obj = json.loads(data)
-        uid = json_obj.get('uid')
-        username = json_obj.get('username')
-        email = json_obj.get('email')
-        phone = json_obj.get('phone')
-        gender = json_obj.get('gender')
-        birthday = json_obj.get('birthday')
+        new_username = json_obj.get('username')
+        new_email = json_obj.get('email')
+        new_phone = json_obj.get('phone')
+        new_gender = json_obj.get('gender')
+        new_birthday = json_obj.get('birthday')
         # 检查用户名是否可用
-        old_user = UserProfile.objects.filter(username=username)
+        old_user = UserProfile.objects.filter(username=new_username)
         if old_user:
             result = {'code': '10120', 'error': '用户名已存在!'}
             return JsonResponse(result)
         # 修改用户信息
         try:
-            user = UserProfile.object.filter(id=uid)
+            user = UserProfile.objects.filter(id=uid)
             user = user[0]
-            user.username = username
-            user.email = email
-            user.phone = phone
-            user.gender = gender
-            user.birthday = birthday
+            user.username = new_username
+            user.email = new_email
+            user.phone = new_phone
+            user.gender = new_gender
+            user.birthday = new_birthday
             user.save()
         except Exception as e:
             result = {'code': '10121', 'error': '用户名已存在!'}
             return JsonResponse(result)
         # 生成、签发token
         # {'code':200, 'username':'xxxx', 'data':{'token':xxxx}}
-        token = make_token(username)
-        return JsonResponse({'code': 200, 'username': username, 'data': {'token': token.decode()}})
+        token = make_token(new_username)
+
+        return JsonResponse({'code': 200, 'data': {'token': token.decode(),'username':new_username}})
 
 
 # 用户个人主页'修改密码'页面展示

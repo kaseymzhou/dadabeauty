@@ -32,5 +32,8 @@ urlpatterns = [
     # http://127.0.0.1:8000/v1/product/collectpro/(user_id)
     url(r'^/collectpro/(\d+)$',views.CollectProductView.as_view()),
 
+    # http://176.122.12.156:8000/v1/product/others_collect_product/(username)
+    url(r'^/others_collect_product/(.*)$',views.OthersCollectProductView.as_view()),
+
 
 ]
