@@ -9,6 +9,8 @@ from django.core.paginator import Paginator
 from tools.logging_check import logging_check
 from user.models import *
 from tools.datetimeseri import JsonCustomEncoder
+from haystack.forms import ModelSearchForm
+from dadabeauty.settings import HAYSTACK_SEARCH_RESULTS_PER_PAGE
 # Create your views here.
 
 r = redis.Redis(host='127.0.0.1',port=6379,db=2)
@@ -58,6 +60,7 @@ class IndexShow(View):
             index_data = json.loads(redis_index)
         else:
             print("使用缓存")
+            print('local',timezone.localtime(timezone.now()))
             index_data = json.loads(redis_index)
         result = {"code": 200, "data": index_data}
 
@@ -569,3 +572,52 @@ class OthersCollectProductView(View):
                   }
         return JsonResponse(result)
 
+
+
+
+class SkuSearch(View):
+    def post(self,request):
+        #搜索 es 版本
+        # 前端必须  用表单提交  且  input  name=q
+        data = request.POST.get('q')
+        if not data:
+            return JsonResponse({'code':3999,
+            'error':'Please give me q'})
+        form = ModelSearchForm(request.POST,load_all=True)
+
+        #  必须调用form.is_valid()  form.seatch才能找到数据
+        if form.is_valid():
+            results = form.search()
+        else:
+            return JsonResponse({'code':3888,
+            'error':'Please give me q !! '})
+
+        #生成分页
+        page_size = settings.HAYSTACK_SEARCH_RESULTS_PER_PAGE
+        paginator = Paginator(results, page_size)
+        try:
+            c_page = int(request.POST.get('page',1))
+            page = paginator.page(c_page)
+        except Exception as e:
+            return JsonResponse({'code':3666,
+                'error':'page number is wrong'})
+        sku_list = []
+        for result in page.object_list:
+            # d = {}
+            # d['car_id'] = page.object_list[i].object.car_id
+            # d['brand'] = page.object_list[i].object.brand
+            # d['pic_url'] = page.object_list[i].object.pic_url
+            # d['score_kb'] = page.object_list[i].object.score_kb
+            # d['series'] = page.object_list[i].object.series
+            d = {}
+            d['sku_id'] = result.object.id
+            d['name'] = result.object.name
+            d['feature'] = result.object.feature
+            d['discount_price'] = result.object.discount_price
+            d['img'] = str(result.object.default_img_url)
+            d['source'] = result.object.source.name
+            sku_list.append(d)
+        result = {'code': 200, 'data': sku_list,'paginator':{'pagesize':page_size,'total':len(results),
+                                                          'base_url':settings.PIC_URL}}
+        print(result)
+        return JsonResponse(result)

@@ -1,0 +1,4 @@
+{{ object.id }}
+{{ object.name }}
+{{ object.feature }}
+{{ object.discount_price }}

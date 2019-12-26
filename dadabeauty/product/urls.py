@@ -35,5 +35,7 @@ urlpatterns = [
     # http://176.122.12.156:8000/v1/product/others_collect_product/(username)
     url(r'^/others_collect_product/(.*)$',views.OthersCollectProductView.as_view()),
 
+    # http://176.122.12.156:8000/v1/product/search/
+    url('^/search/$',views.SkuSearch.as_view())
 
 ]

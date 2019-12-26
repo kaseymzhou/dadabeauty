@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'haystack',
     'user',
     'product',
     'community',
@@ -201,4 +202,17 @@ STATIC_ROOT = '/tedu/dadabeauty/django_static'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 PIC_URL = "http://176.122.12.156:8000{}".format(MEDIA_URL)
+
+# Haystack
+HAYSTACK_CONNECTIONS = {
+        'default': {
+        'ENGINE': 'elasticstack.backends.ConfigurableElasticSearchEngine',
+        'URL': 'http://127.0.0.1:9200/',
+        'INDEX_NAME': 'djangotest',
+        },
+        }
+# 当添加、修改、删除数据时,自动生成倒排索引
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+# 搜索的每⻚大小(根据需求自行修改或添加)
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 9
 

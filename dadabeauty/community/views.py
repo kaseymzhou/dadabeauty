@@ -2,6 +2,8 @@
 
 import redis
 from django.http import JsonResponse
+from django.utils import timezone
+
 from community.models import Blog, Tag, Forward, Comment, Reply, Collect, Image, Tag_blog,LikeCommunity
 from dadabeauty import settings
 from tools.logging_check import logging_check
@@ -305,6 +307,8 @@ class MyIndexCollect(View):
         collect_send_list = []
         # 取收藏博客
         collect_list = Collect.objects.filter(is_active=True, uid=author).order_by('-create_time')
+        #collect_list = Collect.objects.filter('is_active' == True, 'uid' == author.id).extra(select={'create_time':
+    # 'DATE_FORMAT(create_time,"%%Y-%%m-%%d %%H:%%M:%%S")'}).order_by('create_time')
         if not collect_list:
             return JsonResponse({'code': 30112, 'data': '你还没有收藏文章哦'})
         else:
@@ -313,7 +317,7 @@ class MyIndexCollect(View):
                 per_blog_info['title'] = item.b_id.title
                 per_blog_info['content'] = item.b_id.content[:50] + '……'
                 per_blog_info['bid'] = item.b_id.id
-                per_blog_info['create_time'] = item.b_id.create_time
+                per_blog_info['create_time'] = timezone.localtime(item.b_id.create_time)
                 img_obj = Image.objects.filter(b_id=item.b_id)
                 if not img_obj:
                     per_blog_info['img'] = ''
@@ -908,7 +912,7 @@ def get_collect_blog(collect_list, blog_send_list):
         collect_blog['title'] = blog_object.title
         collect_blog['content'] = blog_object.content
         collect_blog['username'] = blog_object.username
-        collect_blog['create_time'] = blog_object.create_time
+        collect_blog['create_time'] = timezone.localtime(blog_object.create_time)
         tags_object_list = Tag_blog.objects.filter(blog_id_fk=blog_object)
         total_tags_list = []
         # 取tag
