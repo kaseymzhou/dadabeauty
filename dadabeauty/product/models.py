@@ -174,3 +174,10 @@ class ProductScore(models.Model):
     def __str__(self):
         return "uid(%s)-sku_id(%s)-score(%s)"%(self.uid,self.sku_id,self.score)
 
+class PredictSkuScore(models.Model):
+    user_id = models.ForeignKey(UserProfile)
+    sku_id = models.ForeignKey(Sku)
+    predict_score = models.FloatField(verbose_name='预测分数')
+    product_type = models.IntegerField(verbose_name="从产品分类")
+    class Meta:
+        db_table = 'predict_sku_score'

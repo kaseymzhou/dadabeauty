@@ -1,3 +1,5 @@
+import random
+
 from django.conf import settings
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -139,6 +141,7 @@ class ProductsDetailView(View):
         :return:
         """
         # 127.0.0.1:8000/v1/goods/detail/401/
+
         # 1. 获取sku实例
         sku_details = {}
 
@@ -197,6 +200,51 @@ class ProductsDetailView(View):
                 per_sale_attr_value_dic['value']=sale_attr_val
                 sale_attr_and_value.append(per_sale_attr_value_dic)
             sku_details['sale_attr']=sale_attr_and_value
+
+            # 获取username
+            recom_sku_list = []
+            username = request.GET.get('user')
+            if not username:
+                for i in range(3):
+                    per_recom = {}
+                    random_num = random.randint(1,100)
+                    sku_obj = Sku.objects.filter(id=random_num)
+                    sku_obj = sku_obj[0]
+                    per_recom['sku_id'] = sku_obj.id
+                    per_recom['img'] = str(sku_obj.default_img_url)
+                    per_recom['name'] = sku_obj.name
+                    per_recom['discount_price'] = str(sku_obj.discount_price)
+                    per_recom['source'] = sku_obj.source_id.name
+                    recom_sku_list.append(per_recom)
+            else:
+                user_obj = UserProfile.objects.filter(username=username)
+                user_obj = user_obj[0]
+                predict_obj = PredictSkuScore.objects.filter(user_id=user_obj,sku_id=sku_item)
+                if not predict_obj:
+                    for i in range(3):
+                        per_recom = {}
+                        random_num = random.randint(1, 100)
+                        sku_obj = Sku.objects.filter(id=random_num)
+                        sku_obj = sku_obj[0]
+                        per_recom['sku_id'] = sku_obj.id
+                        per_recom['img'] = str(sku_obj.default_img_url)
+                        per_recom['name'] = sku_obj.name
+                        per_recom['discount_price'] = str(sku_obj.discount_price)
+                        per_recom['source'] = sku_obj.source_id.name
+                        recom_sku_list.append(per_recom)
+                else:
+                    predict_obj = predict_obj[0]
+                    product_type = predict_obj.product_type
+                    recom_list = PredictSkuScore.objects.filter(product_type=product_type).order_by('-predict_score')
+                    for item in recom_list[:4]:
+                        per_recom = {}
+                        per_recom['sku_id'] = item.sku_id.id
+                        per_recom['img'] = str(item.sku_id.default_img_url)
+                        per_recom['name'] = item.sku_id.name
+                        per_recom['discount_price']= str(item.sku_id.discount_price)
+                        per_recom['source'] = item.sku_id.source_id.name
+                        recom_sku_list.append(per_recom)
+            sku_details['recom_sku_list'] = recom_sku_list
 
 
             """
@@ -265,7 +313,7 @@ class ProductsDetailView(View):
                 comment_user_profile = users[0].profile_image_url
                 one_comment_info['comment_user_profile'] = settings.PIC_URL+str(comment_user_profile)
                 one_comment_info['comment_content'] = item.content
-                one_comment_info['comment_created_time']=item.created_time
+                one_comment_info['comment_created_time']=timezone.localtime(item.created_time)
                 one_comment_info['comment_uid']=users[0].id
                 # 获取每条评论对应的回复
                 replies = ReplyProduct.objects.filter(c_id=c_id,isActive=True)
@@ -280,7 +328,7 @@ class ProductsDetailView(View):
                     one_reply_info_detail['reply_username'] = reply_username
                     one_reply_info_detail['reply_uid'] = reply_uid
                     one_reply_info_detail['reply_content'] = reply_content
-                    one_reply_info_detail['reply_created_time'] = item.created_time
+                    one_reply_info_detail['reply_created_time'] = timezone.localtime(item.created_time)
                     replies_dic.append(one_reply_info_detail)
                 one_comment_info['comment_replies'] = replies_dic
                 per_comment_detail_dic.append(one_comment_info)
@@ -615,7 +663,7 @@ class SkuSearch(View):
             d['feature'] = result.object.feature
             d['discount_price'] = result.object.discount_price
             d['img'] = str(result.object.default_img_url)
-            d['source'] = result.object.source.name
+            # d['source'] = result.object.source.name
             sku_list.append(d)
         result = {'code': 200, 'data': sku_list,'paginator':{'pagesize':page_size,'total':len(results),
                                                           'base_url':settings.PIC_URL}}

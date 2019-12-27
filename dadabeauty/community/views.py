@@ -165,7 +165,7 @@ class MyIndex(View):
                 per_blog_info['title']=item.title
                 per_blog_info['content']=item.content[:50]+'……'
                 per_blog_info['bid'] = item.id
-                per_blog_info['create_time']=item.create_time
+                per_blog_info['create_time']=timezone.localtime(item.create_time).strftime("%b %d %Y %H:%M:%S")
                 img_obj = Image.objects.filter(b_id=item)
                 if not img_obj:
                     per_blog_info['img'] = ''
@@ -251,7 +251,7 @@ class OtherIndex(View):
                 per_blog_info['title'] = item.title
                 per_blog_info['content'] = item.content[:50] + '……'
                 per_blog_info['bid'] = item.id
-                per_blog_info['create_time'] = item.create_time
+                per_blog_info['create_time'] = timezone.localtime(item.create_time).strftime("%b %d %Y %H:%M:%S")
                 img_obj = Image.objects.filter(b_id=item)
                 if not img_obj:
                     per_blog_info['img'] = ''
@@ -317,7 +317,7 @@ class MyIndexCollect(View):
                 per_blog_info['title'] = item.b_id.title
                 per_blog_info['content'] = item.b_id.content[:50] + '……'
                 per_blog_info['bid'] = item.b_id.id
-                per_blog_info['create_time'] = timezone.localtime(item.b_id.create_time)
+                per_blog_info['create_time'] = timezone.localtime(item.b_id.create_time).strftime("%b %d %Y %H:%M:%S")
                 img_obj = Image.objects.filter(b_id=item.b_id)
                 if not img_obj:
                     per_blog_info['img'] = ''
@@ -388,7 +388,7 @@ class OtherIndexCollect(View):
                 per_blog_info['title'] = item.b_id.title
                 per_blog_info['content'] = item.b_id.content[:50] + '……'
                 per_blog_info['bid'] = item.b_id.id
-                per_blog_info['create_time'] = item.b_id.create_time
+                per_blog_info['create_time'] = timezone.localtime(item.b_id.create_time).strftime("%b %d %Y %H:%M:%S")
                 img_obj = Image.objects.filter(b_id=item.b_id)
                 if not img_obj:
                     per_blog_info['img'] = ''
@@ -454,22 +454,6 @@ class DeatilBlog(View):
         # 获取博客详情
         result = get_detail_blog(blog)
         return JsonResponse(result)
-
-    @logging_check
-    def delete(self,request):
-        # http://127.0.0.1:8000/v1/community/detail?blogid=xxx
-        id = request.GET.get('blogid')
-        try:
-            blog = Blog.objects.get(id=id)
-            blog.is_active = False
-            blog.save()
-        except Exception as e:
-            print('删除博客错误\n', e)
-            result = {'code': 30108, 'error': '请给我博客id!'}
-            return JsonResponse(result)
-        result = {'code': 200}
-        return JsonResponse(result)
-
 
 
 
@@ -685,7 +669,8 @@ def get_first_blog(blog_list, blog_send_list):
         per_blog['content'] = item.content
         per_blog['username'] = item.uid.username
         per_blog['profile_img'] = settings.PIC_URL+str(item.uid.profile_image_url)
-        per_blog['create_time'] = item.create_time
+        per_blog['create_time'] = timezone.localtime(item.create_time).strftime("%b %d %Y %H:%M:%S")
+        per_blog['order_create_time'] = item.create_time
         tags_object_list = Tag_blog.objects.filter(blog_id_fk=item)
         total_tags_list = []
         # 取tag
@@ -752,7 +737,7 @@ def get_detail_blog(blog):
     # 取内容
     data['content'] = blog.content
     # 取时间
-    data['create_time'] = blog.create_time
+    data['create_time'] = timezone.localtime(blog.create_time).strftime("%b %d %Y %H:%M:%S")
     # 取点赞数
     like_count_exist = r.hexists('blog:%s' % blog.id, 'like')
     if not like_count_exist:
@@ -807,7 +792,7 @@ def get_detail_blog(blog):
         comment_user_profile = users[0].profile_image_url
         one_comment_info['comment_user_profile'] = settings.PIC_URL + str(comment_user_profile)
         one_comment_info['comment_content'] = item.content
-        one_comment_info['create_time'] = item.create_time
+        one_comment_info['create_time'] = timezone.localtime(item.create_time).strftime("%b %d %Y %H:%M:%S")
 
         # 获取每条评论对应的回复
         replies = Reply.objects.filter(c_id=item, is_active=True)
@@ -821,7 +806,7 @@ def get_detail_blog(blog):
             one_reply_info_detail['reply_username'] = reply_username
             one_reply_info_detail['reply_profile'] = reply_profile
             one_reply_info_detail['reply_content'] = reply_content
-            one_reply_info_detail['create_time'] = item.create_time
+            one_reply_info_detail['create_time'] =  timezone.localtime(item.create_time).strftime("%b %d %Y %H:%M:%S")
             replies_dic.append(one_reply_info_detail)
         one_comment_info['comment_replies'] = replies_dic
         per_comment_detail_dic.append(one_comment_info)
@@ -840,13 +825,15 @@ def get_forward_blog(forward_list, blog_send_list):
         forward_blog['fcontent'] = item.content
         forward_blog['fusername'] = item.uid.username
         forward_blog['profile_img'] = settings.PIC_URL+str(item.uid.profile_image_url)
-        forward_blog['create_time'] = item.create_time
+        forward_blog['create_time'] =  timezone.localtime(item.create_time).strftime("%b %d %Y %H:%M:%S")
+        forward_blog['order_create_time'] = item.create_time
         blog_object = item.b_id
         forward_blog['id'] = blog_object.id
         forward_blog['title'] = blog_object.title
         forward_blog['content'] = blog_object.content
         forward_blog['username'] = blog_object.uid.username
         forward_blog['ocreate_time'] = blog_object.create_time
+        forward_blog['oprofile_img'] = settings.PIC_URL + str(blog_object.uid.profile_image_url)
         tags_object_list = Tag_blog.objects.filter(blog_id_fk=blog_object)
         total_tags_list = []
         # 取tag
@@ -899,7 +886,7 @@ def get_forward_blog(forward_list, blog_send_list):
 def order_by_creatime(blog_send_list):
     for r in range(0, len(blog_send_list) - 1):
         for c in range(r, len(blog_send_list)):
-            if blog_send_list[r]['create_time'] < blog_send_list[c]['create_time']:
+            if blog_send_list[r]['order_create_time'] < blog_send_list[c]['order_create_time']:
                 blog_send_list[r], blog_send_list[c] = blog_send_list[c], blog_send_list[r]
 
 
