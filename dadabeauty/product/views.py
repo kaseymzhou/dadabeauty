@@ -204,7 +204,8 @@ class ProductsDetailView(View):
             # 获取username
             recom_sku_list = []
             username = request.GET.get('user')
-            if not username:
+            print(username)
+            if username == 'null':
                 for i in range(3):
                     per_recom = {}
                     random_num = random.randint(1,100)
@@ -238,6 +239,8 @@ class ProductsDetailView(View):
                     recom_list = PredictSkuScore.objects.filter(product_type=product_type).order_by('-predict_score')
                     for item in recom_list[:4]:
                         per_recom = {}
+                        if item.sku_id.id == sku_id:
+                            continue
                         per_recom['sku_id'] = item.sku_id.id
                         per_recom['img'] = str(item.sku_id.default_img_url)
                         per_recom['name'] = item.sku_id.name

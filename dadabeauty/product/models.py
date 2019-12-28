@@ -181,3 +181,5 @@ class PredictSkuScore(models.Model):
     product_type = models.IntegerField(verbose_name="从产品分类")
     class Meta:
         db_table = 'predict_sku_score'
+    def __str__(self):
+        return "uid(%s)-sku(%s)"%(self.user_id,self.sku_id)
