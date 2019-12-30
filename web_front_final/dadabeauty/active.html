@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>达达美妆 用户激活</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<link rel="icon" href="images/Favicon.png">
+<link rel="stylesheet" type="text/css" href="css/animate.css">
+<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="css/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="css/fontello.css">
+<link rel="stylesheet" type="text/css" href="css/fontello-codes.css">
+<link rel="stylesheet" type="text/css" href="css/thumbs-embedded.css">
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<link rel="stylesheet" type="text/css" href="css/responsive.css">
+<link rel="stylesheet" type="text/css" href="css/color.css">
+</head>
+<body>
+
+<div class="wrapper">
+
+
+		<header id='header_fix'>
+				<div class="top_bar">
+						<div class="container">
+							<div class="top_header_content">
+								<div class="menu_logo">
+									<a href="index.html" title="" class="logo">
+										<img src="images/logo.jpg" alt="">
+									</a>
+								</div>
+								<!--menu_logo end-->
+			
+								<div class="search_form">
+									<form>
+										<input type="text" id="search_product" name="search" placeholder="搜索产品">
+										<button type="button" onclick="searchfunction()">
+											<i class="icon-search"></i>
+										</button>
+									</form>
+								</div>
+								<!--search_form end-->
+			
+								<ul class="controls-lv" id='header_unlogged'>
+									<a href="login.html" title="" class="btn-default">登录</a>
+								</ul>
+			
+								<ul class="controls-lv" id='header_logged' style="display:none">
+									<li class="user-log">
+										<div class="user-ac-img">
+											<img src="" alt="" id='header_img'>
+										</div>
+										<div class="account-menu">
+											<h4 id='header_name'></h4>
+											<div class="sd_menu">
+												<ul class="mm_menu">
+													<li>
+														<span>
+															<i class="icon-user"></i>
+														</span>
+														<a href="user_account.html" title="">My Channel</a>
+													</li>
+													<li>
+														<span>
+															<i class="icon-logout"></i>
+														</span>
+														<a href="#" title="" id='logout'>Sign out</a>
+													</li>
+												</ul>
+											</div>
+											<!--sd_menu end-->
+									</li>
+									<li>
+										<a href="upload_article.html" title="" class="btn-default">发表美妆日记</a>
+									</li>
+								</ul>
+								<!--controls-lv end-->
+								<div class="clearfix"></div>
+							</div>
+							<!--top_header_content end-->
+						</div>
+					</div>
+					<!--header_content end-->
+					<div class="btm_bar">
+						<div class="container">
+							<div class="btm_bar_content">
+								<nav>
+									<ul>
+										<li><span display='inline-block' width='20px'></span></li>
+										<li><a href="index.html" title="">首页</a></li>
+										<li><a href="#" title="">眼妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=1" title="">眼线</a></li>
+													<li><a href="spu_show.html?subclass=2" title="">眼影</a></li>
+													<li><a href="spu_show.html?subclass=3" title="">睫毛膏</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="#" title="">眉妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=4" title="">眉笔</a></li>
+													<li><a href="spu_show.html?subclass=5" title="">眉粉</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="#" title="">底妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=6" title="">妆前乳</a></li>
+													<li><a href="spu_show.html?subclass=7" title="">粉底液</a></li>
+													<li><a href="spu_show.html?subclass=8" title="">遮瑕</a></li>
+													<li><a href="spu_show.html?subclass=9" title="">散粉</a></li>
+													<li><a href="spu_show.html?subclass=10" title="">腮红</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="#" title="">唇妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=11" title="">唇膏</a></li>
+													<li><a href="spu_show.html?subclass=12" title="">唇釉</a></li>
+													<li><a href="spu_show.html?subclass=13" title="">唇笔</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="community.html" title="">社区</a></li>
+									</ul>
+								</nav>
+								<!--navigation end-->
+			
+			
+								<div class="clearfix"></div>
+							</div>
+							<!--btm_bar_content end-->
+						</div>
+					</div>
+					<!--btm_bar end-->
+		</header>
+	
+	<section class="banner-section p120">
+		<div class="container">
+			<div class="banner-text">
+				<h2>欢迎加入DaDa Beauty</h2>
+			</div><!--banner-text end-->
+		</div>
+	</section><!--banner-section end-->
+
+	<section class="form_popup">
+		
+		<div class="signup_form" id="signup_form">
+		 	<div class="hd-lg">
+				<img src="images/logo.jpg" alt="">
+				<span class='query'>激活账户</span>
+		 	</div><!--hd-lg end-->
+			<div class="user-account-pr">
+				<form method="POST" class='form_box'>
+					<div id="findpass">
+					</div>
+					<div class="chekbox-lg" id="isActive">
+					<label>
+						<input type="radio" class="active_true" name='ia'>
+						<b class="checkmark"> </b>
+						<span>是</span>
+					</label>		
+					<label>
+						<input type="radio" class="active_flase"  name='ia'>
+						<b class="checkmark"> </b>
+						<span>否</span>
+					</label>		
+					</div>
+					<div class="input-sec mb-0">
+						<button type="button" class="submit">提交</button>
+					</div><!--input-sec end-->
+				</form>
+				
+			</div><!--user-account end--->
+		</div><!--login end--->
+
+	</section><!--form_popup end-->
+
+		
+
+
+</div><!--wrapper end-->
+
+
+
+<script src="../dadabeauty/js/jquery-3.1.1.min.js"></script>
+<script src="../dadabeauty/js/jquery.min.js"></script>
+<script src="../dadabeauty/js/popper.js"></script>
+<script src="../dadabeauty/js/bootstrap.min.js"></script>
+<script src="../dadabeauty/js/flatpickr.js"></script>
+<script src="../dadabeauty/js/script.js"></script>
+<script src="../dadabeauty/js/headerjs.js"></script>
+
+<script>
+   var url_params = location.search
+    var isBtn = document.getElementsByClassName('active_true')[0];
+    isBtn.onclick=function(){
+        $.ajax({
+                url: 'http://176.122.12.156:8000'+'/v1/user/activation'+url_params,
+                type: 'get',
+                dataType: "json",
+                success: function (d) {
+                    if (d.code == 200) {
+                        alert('激活成功！')
+                        window.location.href="user_account.html"
+                    }else{
+                      alert(d.error)
+                    }
+                }
+            })
+    }
+
+	function searchfunction(){
+				var value = $('#search_product').val();
+				window.location.href = 'search.html?value='+value
+			}
+</script>
+
+</body>
+</html>

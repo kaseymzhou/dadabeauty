@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>达达美妆 发表美妆日记</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<link rel="icon" href="images/Favicon.png">
+<link rel="stylesheet" type="text/css" href="css/animate.css">
+<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="css/fontello.css">
+<link rel="stylesheet" type="text/css" href="css/fontello-codes.css">
+<link rel="stylesheet" type="text/css" href="css/thumbs-embedded.css">
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<link rel="stylesheet" type="text/css" href="css/responsive.css">
+<link rel="stylesheet" type="text/css" href="css/color.css">
+<style>
+#imgList li{
+	float:left;
+	margin-right:10px;
+}
+#imgList>li>img{
+	width:200px;
+	height:200px;
+} 
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+		<header id='header_fix'>
+				<div class="top_bar">
+						<div class="container">
+							<div class="top_header_content">
+								<div class="menu_logo">
+									<a href="index.html" title="" class="logo">
+										<img src="images/logo.jpg" alt="">
+									</a>
+								</div>
+								<!--menu_logo end-->
+			
+								<div class="search_form">
+									<form>
+										<input type="text" id="search_product" name="search" placeholder="搜索产品">
+										<button type="button" onclick="searchfunction()">
+											<i class="icon-search"></i>
+										</button>
+									</form>
+								</div>
+								<!--search_form end-->
+			
+								<ul class="controls-lv" id='header_unlogged'>
+									<a href="login.html" title="" class="btn-default">登录</a>
+								</ul>
+			
+								<ul class="controls-lv" id='header_logged' style="display:none">
+									<li class="user-log">
+										<div class="user-ac-img">
+											<img src="" alt="" id='header_img'>
+										</div>
+										<div class="account-menu">
+											<h4 id='header_name'></h4>
+											<div class="sd_menu">
+												<ul class="mm_menu">
+													<li>
+														<span>
+															<i class="icon-user"></i>
+														</span>
+														<a href="user_account.html" title="">My Channel</a>
+													</li>
+													<li>
+														<span>
+															<i class="icon-logout"></i>
+														</span>
+														<a href="#" title="" id='logout'>Sign out</a>
+													</li>
+												</ul>
+											</div>
+											<!--sd_menu end-->
+									</li>
+									<li>
+										<a href="upload_article.html" title="" class="btn-default">发表美妆日记</a>
+									</li>
+								</ul>
+								<!--controls-lv end-->
+								<div class="clearfix"></div>
+							</div>
+							<!--top_header_content end-->
+						</div>
+					</div>
+					<!--header_content end-->
+					<div class="btm_bar">
+						<div class="container">
+							<div class="btm_bar_content">
+								<nav>
+									<ul>
+										<li><span display='inline-block' width='20px'></span></li>
+										<li><a href="index.html" title="">首页</a></li>
+										<li><a href="#" title="">眼妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=1" title="">眼线</a></li>
+													<li><a href="spu_show.html?subclass=2" title="">眼影</a></li>
+													<li><a href="spu_show.html?subclass=3" title="">睫毛膏</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="#" title="">眉妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=4" title="">眉笔</a></li>
+													<li><a href="spu_show.html?subclass=5" title="">眉粉</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="#" title="">底妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=6" title="">妆前乳</a></li>
+													<li><a href="spu_show.html?subclass=7" title="">粉底液</a></li>
+													<li><a href="spu_show.html?subclass=8" title="">遮瑕</a></li>
+													<li><a href="spu_show.html?subclass=9" title="">散粉</a></li>
+													<li><a href="spu_show.html?subclass=10" title="">腮红</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="#" title="">唇妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=11" title="">唇膏</a></li>
+													<li><a href="spu_show.html?subclass=12" title="">唇釉</a></li>
+													<li><a href="spu_show.html?subclass=13" title="">唇笔</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="community.html" title="">社区</a></li>
+									</ul>
+								</nav>
+								<!--navigation end-->
+			
+			
+								<div class="clearfix"></div>
+							</div>
+							<!--btm_bar_content end-->
+						</div>
+					</div>
+					<!--btm_bar end-->
+		</header>
+
+	<section class="upload-detail">
+		<div class="container">
+			<h3> 上传美妆日志</h3>
+		</div>
+	</section><!--upload-detail end-->
+
+
+	<section class="vid-title-sec">
+		<div class="container">
+			<form method="POST"  action="/upload" enctype="multipart/form-data" id='upload-pic'>
+				<div class="vid-title">
+					<h2 class="title-hd">标题</h2>
+					<div class="form_field">
+						<input type="text" placeholder="写下您的文章标题" id="text-title">
+					</div>
+				</div><!--vid-title-->
+				
+				<div class="abt-vidz-pr">
+					<h2 class="title-hd">文章内容</h2>
+					<div class="form_field">
+						<textarea placeholder="文章内容(最少10字哦～)..." id="text-content"></textarea>
+					</div>
+				</div><!--abt-vidz-->
+
+				<div class="category">
+					<h2 class="title-hd">TAGS</h2>
+					<div class="category-typ" id="tag-choice">
+						<ul class="catgss_list" id='tag-show'>	
+						</ul>
+					</div>
+				</div>
+				
+				<div class="input-sec" style="margin-top:50px">
+					<label>
+						<h2 class="title-hd">上传图片（最多可上传6张）</h2>
+						<input type="file" id='blogpics' name="blogpics" display='inline-block' multiple>
+						<div style="margin-top:20px">
+						<ul id="imgList">
+							<li><img src="" alt=""></li>
+							<li><img src="" alt=""></li>
+						</ul>
+					</div>
+					</label>
+				</div>
+						<div class="clearfix"></div>
+						<div class="btn-sbmit">
+							<button type="button" id='bt_confirm'>上传日记</button>
+						</div><!--btn-sbmit end-->
+				</form>		
+					</div><!--container-->
+	</section><!--vid-title-sec-->
+</div><!--wrapper-->
+	
+
+	
+
+
+
+
+
+
+<script src="../dadabeauty/js/jquery-3.1.1.min.js"></script>
+<script src="../dadabeauty/js/jquery.min.js"></script>
+<script src="../dadabeauty/js/popper.js"></script>
+<script src="../dadabeauty/js/bootstrap.min.js"></script>
+<script src="../dadabeauty/js/flatpickr.js"></script>
+<script src="../dadabeauty/js/script.js"></script>
+<script src="../dadabeauty/js/headerjs.js"></script>
+
+
+<script>
+	// 多图片预览
+	function getObjectURL(file) {
+  var url = null ; 
+  // 下面函数执行的效果是一样的，只是需要针对不同的浏览器执行不同的 js 函数而已
+  if (window.createObjectURL!=undefined) { // basic
+    url = window.createObjectURL(file) ;
+  } else if (window.URL!=undefined) { // mozilla(firefox)
+    url = window.URL.createObjectURL(file) ;
+  } else if (window.webkitURL!=undefined) { // webkit or chrome
+    url = window.webkitURL.createObjectURL(file) ;
+  }
+  return url ;
+}
+
+	$("#blogpics").change(function(){
+  console.log(this.files)
+  var arr = [];
+  for(var val of this.files){
+    var imgUrl = getObjectURL(val) ;
+    if (imgUrl) {
+      // 在这里修改图片的地址属性
+      arr.push('<li><img src="'+imgUrl+'"/></li>')
+    }
+    $('#imgList').html(arr.join(''))
+  }
+}) ;
+		
+		// 旧预览上传的图片
+		// 	$("#myfile1").on('change',function () {
+		// 	var choose_file=$(this)[0].files[0];
+		// 	var reader=new FileReader();
+		// 	reader.readAsDataURL(choose_file);
+		// 	reader.onload=function () {
+		// 		$("#avatar-img1").attr("src",reader.result)
+		// 		$("#avatar-img2").attr("src",reader.result[1])
+        // 	}
+   		//  });
+
+			var token=localStorage.getItem("dabeauty_token");
+			//get请求获取页面（展示tag）
+			$.ajax({
+				type: 'get',
+				url: 'http://176.122.12.156:8000/v1/community/sendtopics?authorname='+window.localStorage.getItem('dabeauty_user'),
+				beforeSend:function(request){
+						request.setRequestHeader("authorization",token)
+				},
+				success: function (result) {
+					var data = result.tags_list
+					if (result.code == 200) { 
+						var html = ''
+						for (var i=0;i<data.length;i++){	
+						html+=		'<li>'
+						html+=			'<div class="chekbox-lg">'
+						html+=				'<label>'
+						html+=					'<input type="checkbox" name="tag_names" value="'+data[i]+'">'
+						html+=					'<b class="checkmark"></b>'
+						html+=					'<span>'+data[i]+'</span>'
+						html+=				'</label>'
+						html+=			'</div>'
+						html+=		'</li>'
+						}$('#tag-show').html(html)
+					}
+					else {
+						alert(result.error);	
+					}
+				}
+			});
+
+			
+			$('#bt_confirm').click(function () {
+				var token=localStorage.getItem("dabeauty_token");
+				var uid=window.localStorage.getItem('dabeauty_uid');
+				var chk_value =[];
+				$('input[name="tag_names"]:checked').each(function(){//遍历每一个名字为tag_names的复选框，其中选中的执行函数    
+					chk_value.push($(this).val());//将选中的值添加到数组chk_value中
+				});
+      var formdata = new FormData(); 
+					$.each($("#blogpics")[0].files, function(i, file) {
+					formdata.append("blogpics", file);
+  			});
+
+
+					// formdata.append("blogpics",$("#blogpics")[0].files);
+					formdata.append('title',$('#text-title').val());
+					formdata.append('content',$('#text-content').val());
+					formdata.append('tags',chk_value);
+					$.ajax({  
+							url: 'http://176.122.12.156:8000/v1/community/sendtopics?authorname='+window.localStorage.getItem('dabeauty_user'),
+							type: 'post',  
+							data: formdata, 
+							beforeSend:function(request){
+										request.setRequestHeader("authorization",token)
+							},    
+							processData: false,  
+							contentType: false, 
+							success: function (data) {//成功的回调函数
+									if (data.code === 200){
+									alert('上传日记成功！');
+									location.reload();
+							}else {
+								alert(data.error);
+							}		
+						},
+						error: function (e) {
+								alert(data.error);
+						}
+					}) 
+						})
+
+
+						function searchfunction(){
+				var value = $('#search_product').val();
+				window.location.href = 'search.html?value='+value
+			}
+
+</script>
+
+
+</body>
+</html>

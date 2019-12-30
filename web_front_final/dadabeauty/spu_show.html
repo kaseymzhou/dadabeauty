@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>达达美妆 产品概览</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<link rel="icon" href="images/Favicon.png">
+<link rel="stylesheet" type="text/css" href="css/animate.css">
+<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="css/fontello.css">
+<link rel="stylesheet" type="text/css" href="css/fontello-codes.css">
+<link rel="stylesheet" type="text/css" href="css/thumbs-embedded.css">
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<link rel="stylesheet" type="text/css" href="css/responsive.css">
+<link rel="stylesheet" type="text/css" href="css/color.css">
+<style>
+#pager{
+	position:absolute;
+	display: inline-block;
+	width:500px;
+	bottom:10px;
+	right:40%;
+}
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+
+
+		<header id='header_fix'>
+				<div class="top_bar">
+						<div class="container">
+							<div class="top_header_content">
+								<div class="menu_logo">
+									<a href="index.html" title="" class="logo">
+										<img src="images/logo.jpg" alt="">
+									</a>
+								</div>
+								<!--menu_logo end-->
+			
+								<div class="search_form">
+									<form>
+										<input type="text" id="search_product" name="search" placeholder="搜索产品">
+										<button type="button" onclick="searchfunction()">
+											<i class="icon-search"></i>
+										</button>
+									</form>
+								</div>
+								<!--search_form end-->
+			
+								<ul class="controls-lv" id='header_unlogged'>
+									<a href="login.html" title="" class="btn-default">登录</a>
+								</ul>
+			
+								<ul class="controls-lv" id='header_logged' style="display:none">
+									<li class="user-log">
+										<div class="user-ac-img">
+											<img src="" alt="" id='header_img'>
+										</div>
+										<div class="account-menu">
+											<h4 id='header_name'></h4>
+											<div class="sd_menu">
+												<ul class="mm_menu">
+													<li>
+														<span>
+															<i class="icon-user"></i>
+														</span>
+														<a href="user_account.html" title="">My Channel</a>
+													</li>
+													<li>
+														<span>
+															<i class="icon-logout"></i>
+														</span>
+														<a href="#" title="" id='logout'>Sign out</a>
+													</li>
+												</ul>
+											</div>
+											<!--sd_menu end-->
+									</li>
+									<li>
+										<a href="upload_article.html" title="" class="btn-default">发表美妆日记</a>
+									</li>
+								</ul>
+								<!--controls-lv end-->
+								<div class="clearfix"></div>
+							</div>
+							<!--top_header_content end-->
+						</div>
+					</div>
+					<!--header_content end-->
+					<div class="btm_bar">
+						<div class="container">
+							<div class="btm_bar_content">
+								<nav>
+									<ul>
+										<li><span display='inline-block' width='20px'></span></li>
+										<li><a href="index.html" title="">首页</a></li>
+										<li><a href="#" title="">眼妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=1" title="">眼线</a></li>
+													<li><a href="spu_show.html?subclass=2" title="">眼影</a></li>
+													<li><a href="spu_show.html?subclass=3" title="">睫毛膏</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="#" title="">眉妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=4" title="">眉笔</a></li>
+													<li><a href="spu_show.html?subclass=5" title="">眉粉</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="#" title="">底妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=6" title="">妆前乳</a></li>
+													<li><a href="spu_show.html?subclass=7" title="">粉底液</a></li>
+													<li><a href="spu_show.html?subclass=8" title="">遮瑕</a></li>
+													<li><a href="spu_show.html?subclass=9" title="">散粉</a></li>
+													<li><a href="spu_show.html?subclass=10" title="">腮红</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="#" title="">唇妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=11" title="">唇膏</a></li>
+													<li><a href="spu_show.html?subclass=12" title="">唇釉</a></li>
+													<li><a href="spu_show.html?subclass=13" title="">唇笔</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="community.html" title="">社区</a></li>
+									</ul>
+								</nav>
+								<!--navigation end-->
+			
+			
+								<div class="clearfix"></div>
+							</div>
+							<!--btm_bar_content end-->
+						</div>
+					</div>
+					<!--btm_bar end-->
+		</header>
+
+
+	<section class="browse_categories_sec">
+		<div class="container">
+			<div class="browse_categories" id="product_list_show">		
+			</div><!--</div> end-->
+		</div>
+	</section><!--browse-sec end-->
+
+	<!-- <div class="pager" id="pager">
+		<a href="javascript:;" class="disabled" id="previous">上一页</a>
+	  <div id="btnBox" style="display: inline-block;">
+		<a href="javascript:;" class="current">1</a>
+		<a href="javascript:;" class="tcdNumber">2</a>
+		<a href="javascript:;" class="tcdNumber">3</a>
+	  </div>
+	  <a href="javascript:;" class="nextPage" id="next">下一页</a>
+	</div> -->
+
+	<section class="more_items_sec text-center">
+		<div class="container">
+			<a href="#" title="">
+				<svg width="19" height="24" viewBox="0 0 19 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M18.1618 24.0001H0.838235C0.374412 24.0001 0 23.6261 0 23.1628V5.86052C0 5.39727 0.374412 5.02332 0.838235 5.02332H18.1618C18.6256 5.02332 19 5.39727 19 5.86052V23.1628C19 23.6261 18.6256 24.0001 18.1618 24.0001ZM1.67647 22.3256H17.3235V6.69773H1.67647V22.3256Z" fill="#9494A0"/>
+					<g opacity="0.25">
+					<path opacity="0.25" d="M13.1324 4.18605C12.6685 4.18605 12.2941 3.81209 12.2941 3.34884V1.67442H6.70589V3.34884C6.70589 3.81209 6.33148 4.18605 5.86765 4.18605C5.40383 4.18605 5.02942 3.81209 5.02942 3.34884V0.83721C5.02942 0.373954 5.40383 0 5.86765 0H13.1324C13.5962 0 13.9706 0.373954 13.9706 0.83721V3.34884C13.9706 3.81209 13.5962 4.18605 13.1324 4.18605Z" fill="#9494A0"/>
+					</g>
+					<path d="M9.50001 19.3479C9.28487 19.3479 9.06972 19.267 8.90766 19.1024L5.92634 16.1275C5.59942 15.801 5.59942 15.2707 5.92634 14.9442C6.25325 14.6177 6.78413 14.6177 7.11104 14.9442L9.50001 17.3275L11.8862 14.9442C12.2131 14.6177 12.744 14.6177 13.0709 14.9442C13.3978 15.2707 13.3978 15.801 13.0709 16.1275L10.0924 19.1024C9.93031 19.267 9.71516 19.3479 9.50001 19.3479Z" fill="#9494A0"/>
+					<path d="M9.49999 18.4186C9.03617 18.4186 8.66176 18.0447 8.66176 17.5814V10.3256C8.66176 9.86236 9.03617 9.4884 9.49999 9.4884C9.96382 9.4884 10.3382 9.86236 10.3382 10.3256V17.5814C10.3382 18.0447 9.96382 18.4186 9.49999 18.4186Z" fill="#9494A0"/>
+					<g opacity="0.5">
+					<path opacity="0.5" d="M15.6471 6.69764C15.1832 6.69764 14.8088 6.32369 14.8088 5.86043V4.18601H4.19118V5.86043C4.19118 6.32369 3.81677 6.69764 3.35294 6.69764C2.88912 6.69764 2.51471 6.32369 2.51471 5.86043V3.34881C2.51471 2.88555 2.88912 2.5116 3.35294 2.5116H15.6471C16.1109 2.5116 16.4853 2.88555 16.4853 3.34881V5.86043C16.4853 6.32369 16.1109 6.69764 15.6471 6.69764Z" fill="#9494A0"/>
+					</g>
+				</svg>
+			</a>
+		</div>
+	</section><!--more_items_sec end-->			
+
+
+</div><!--wrapper end-->
+
+
+
+
+<script src="../dadabeauty/js/jquery-3.1.1.min.js"></script>
+<script src="../dadabeauty/js/jquery.min.js"></script>
+<script src="../dadabeauty/js/popper.js"></script>
+<script src="../dadabeauty/js/bootstrap.min.js"></script>
+<script src="../dadabeauty/js/flatpickr.js"></script>
+<script src="../dadabeauty/js/script.js"></script>
+<script src="../dadabeauty/js/headerjs.js"></script>
+
+<script>
+(function ($) {
+          $.getUrlParam = function (name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return r;
+            return null;
+          }
+})(jQuery);
+        
+		var subclass_id = $.getUrlParam('subclass')[2];
+		window.localStorage.setItem('subclass_id',subclass_id)
+			$.ajax({
+				type: 'get',
+				url: 'http://176.122.12.156:8000/v1/product/list/subclass/'+subclass_id,
+				success: function (result) {
+					var data = result.data
+					if (result.code == 200) { 
+					var html = ''
+					for (var i=0;i<data.length;i++){
+						if (i==0||(i%6==0)){
+							html += '<div class="row" >'
+						}
+						html+='<div class="col-lg-2 col-md-4 col-sm-4 col-6 full_wdth">'
+						html+='<div class="br-channel">'
+						html+='<div class="br-channel-img">'
+						html+='<a href="product_specific.html?sku='+data[i].skuid+'" title="">'
+						html+='<img src="'+data[i].image+'" alt="">'
+						html+='</a>'
+						html+='</div>'
+						html+='<div class="br-info">'
+						html+='<h3><a href="product_specific.html?sku='+data[i].skuid+'" title="">'+data[i].name+'</a></h3>'
+						html+='<span>'+data[i].source+'</span>'
+						html+='</div>'
+						html+='</div><!--br-channel end-->'
+						html+='</div>'
+						if ((i+1)%6==0){
+							html += '</div>'	
+						}
+					}$('#product_list_show').html(html)
+				}else {
+						alert(result.error);	
+					}
+				}
+			})
+
+			function searchfunction(){
+				var value = $('#search_product').val();
+				window.location.href = 'search.html?value='+value
+			}
+
+</script>
+
+</body>
+</html>

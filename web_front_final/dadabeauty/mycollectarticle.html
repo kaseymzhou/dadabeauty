@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>达达美妆 收藏文章</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<link rel="icon" href="images/Favicon.png">
+<link rel="stylesheet" type="text/css" href="css/animate.css">
+<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="css/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="css/fontello.css">
+<link rel="stylesheet" type="text/css" href="css/fontello-codes.css">
+<link rel="stylesheet" type="text/css" href="css/thumbs-embedded.css">
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<link rel="stylesheet" type="text/css" href="css/responsive.css">
+<link rel="stylesheet" type="text/css" href="css/color.css">
+
+</head>
+
+
+<body>
+
+
+
+	<div class="wrapper">
+			
+			<header id='header_fix'>
+					<div class="top_bar">
+							<div class="container">
+								<div class="top_header_content">
+									<div class="menu_logo">
+										<a href="index.html" title="" class="logo">
+											<img src="images/logo.jpg" alt="">
+										</a>
+									</div>
+									<!--menu_logo end-->
+				
+									<div class="search_form">
+										<form>
+											<input type="text" id="search_product" name="search" placeholder="搜索产品">
+											<button type="button" onclick="searchfunction()">
+												<i class="icon-search"></i>
+											</button>
+										</form>
+									</div>
+									<!--search_form end-->
+				
+									<ul class="controls-lv" id='header_unlogged'>
+										<a href="login.html" title="" class="btn-default">登录</a>
+									</ul>
+				
+									<ul class="controls-lv" id='header_logged' style="display:none">
+										<li class="user-log">
+											<div class="user-ac-img">
+												<img src="" alt="" id='header_img'>
+											</div>
+											<div class="account-menu">
+												<h4 id='header_name'></h4>
+												<div class="sd_menu">
+													<ul class="mm_menu">
+														<li>
+															<span>
+																<i class="icon-user"></i>
+															</span>
+															<a href="user_account.html" title="">My Channel</a>
+														</li>
+														<li>
+															<span>
+																<i class="icon-logout"></i>
+															</span>
+															<a href="#" title="" id='logout'>Sign out</a>
+														</li>
+													</ul>
+												</div>
+												<!--sd_menu end-->
+										</li>
+										<li>
+											<a href="upload_article.html" title="" class="btn-default">发表美妆日记</a>
+										</li>
+									</ul>
+									<!--controls-lv end-->
+									<div class="clearfix"></div>
+								</div>
+								<!--top_header_content end-->
+							</div>
+						</div>
+						<!--header_content end-->
+						<div class="btm_bar">
+							<div class="container">
+								<div class="btm_bar_content">
+									<nav>
+										<ul>
+											<li><span display='inline-block' width='20px'></span></li>
+											<li><a href="index.html" title="">首页</a></li>
+											<li><a href="#" title="">眼妆</a>
+												<div class="mega-menu">
+													<ul>
+														<li><a href="spu_show.html?subclass=1" title="">眼线</a></li>
+														<li><a href="spu_show.html?subclass=2" title="">眼影</a></li>
+														<li><a href="spu_show.html?subclass=3" title="">睫毛膏</a></li>
+													</ul>
+												</div>
+												<div class="clearfix"></div>
+											</li>
+											<li><a href="#" title="">眉妆</a>
+												<div class="mega-menu">
+													<ul>
+														<li><a href="spu_show.html?subclass=4" title="">眉笔</a></li>
+														<li><a href="spu_show.html?subclass=5" title="">眉粉</a></li>
+													</ul>
+												</div>
+												<div class="clearfix"></div>
+											</li>
+											<li><a href="#" title="">底妆</a>
+												<div class="mega-menu">
+													<ul>
+														<li><a href="spu_show.html?subclass=6" title="">妆前乳</a></li>
+														<li><a href="spu_show.html?subclass=7" title="">粉底液</a></li>
+														<li><a href="spu_show.html?subclass=8" title="">遮瑕</a></li>
+														<li><a href="spu_show.html?subclass=9" title="">散粉</a></li>
+														<li><a href="spu_show.html?subclass=10" title="">腮红</a></li>
+													</ul>
+												</div>
+												<div class="clearfix"></div>
+											</li>
+											<li><a href="#" title="">唇妆</a>
+												<div class="mega-menu">
+													<ul>
+														<li><a href="spu_show.html?subclass=11" title="">唇膏</a></li>
+														<li><a href="spu_show.html?subclass=12" title="">唇釉</a></li>
+														<li><a href="spu_show.html?subclass=13" title="">唇笔</a></li>
+													</ul>
+												</div>
+												<div class="clearfix"></div>
+											</li>
+											<li><a href="community.html" title="">社区</a></li>
+										</ul>
+									</nav>
+									<!--navigation end-->
+				
+				
+									<div class="clearfix"></div>
+								</div>
+								<!--btm_bar_content end-->
+							</div>
+						</div>
+						<!--btm_bar end-->
+			</header>	
+
+
+		<section class="user-account">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-3">
+						<div class="sidebar">
+							<div class="widget video_info pr sp">
+								<span class="vc_hd">
+									<img src="" alt="" id='sidebar_profile'>
+								</span>
+								<h4 id='sidebar_username'></h4>
+								<div style="width:250px"><p id="sidebar_descript"></p></div>
+								
+							</div><!--video_info pr-->
+							<div class="widget contacts">
+								<h2 class="hd-uc"><i class="icon-group"></i>志同道合</h2>
+								<ul>
+										<li><a href="myfollow.html" title="">我的关注</a></li>
+										<li><a href="myfans.html" title="">我的粉丝</a></li>
+								</ul>
+							</div><!-- Contacts  end-->
+							<h1></h1>
+							<div class="widget messages">
+								<h2 class="hd-uc"><i class="icon-message"></i>宝藏盒子</h2>
+								<ul>
+									<li><a href="mycollectproduct.html" title="">收藏商品</a></li>
+									<li><a href="mycollectarticle.html" title="">收藏文章</a></li>
+								</ul>
+							</div><!--messages end-->
+							<div class="widget account">
+								<h2 class="hd-uc"> <i class="icon-user"></i>密切相关</h2>
+								<ul>
+									<li><a href="changeinfo.html">修改个人基本信息</a></li>
+									<li><a href="changepassword.html">修改密码</a></li>
+								</ul>
+							</div><!--account end-->	
+						</div><!--sidebar end-->
+					</div>
+
+					<div class="col-lg-9">
+						<div class="video-details">
+							<div class="latest_vidz">
+								<div class="latest-vid-option">
+									<h2 class="hd-op">我收藏的文章</h2>
+									<div class="clearfix"></div>
+								</div><!--latest-vid-option end-->
+								<div id="article_content"></div>
+							</div><!--latest_vidz end-->
+					</div>
+				</div>
+			</div>
+		</section><!--user-account end-->
+
+	</div><!--wrapper end-->
+
+
+
+	<script src="../dadabeauty/js/jquery-3.1.1.min.js"></script>
+	<script src="../dadabeauty/js/jquery.min.js"></script>
+	<script src="../dadabeauty/js/popper.js"></script>
+	<script src="../dadabeauty/js/bootstrap.min.js"></script>
+	<script src="../dadabeauty/js/flatpickr.js"></script>
+	<script src="../dadabeauty/js/script.js"></script>
+	<script src="../dadabeauty/js/headerjs.js"></script>
+	<script src="../dadabeauty/js/sidebar.js"></script>
+
+
+	<script>
+		var token=localStorage.getItem("dabeauty_token");
+		$.ajax({
+				type : 'get',
+				url : 'http://176.122.12.156:8000/v1/community/index_collect?authorname='+window.localStorage.getItem('dabeauty_user'),
+				beforeSend:function(request){
+					request.setRequestHeader("authorization",token)
+				},
+				contentType:'application/json',
+				success:function (response) {
+						var data = response.data
+						if (response.code==200) {
+							//$('#sidebar_descript').text(data.description);
+							var html = '';
+							for (var a=0;a<data.length;a++){
+								html += '<div class="vidz_list">'
+								html +=		'<div class="tb-pr">'
+								html +=			'<div class="row">'
+								html +=				'<div class="col-xl-8 col-lg-9 col-md-9 col-sm-12">'
+								html +=					'<div class="tab-history acct_page">'
+								html +=						'<div class="videoo">'
+								html +=							'<div class="vid_thumbainl ms br">'
+								html +=								'<a href="article_specific.html?bid='+data[a].bid+'">' 
+								html +=									'<img style="width:270px;height:169px" src="'+data[a].img+'">'
+								html +=									'<span class="watch_later">'
+								html +=										'<i class="icon-watch_later_fill"></i>'
+								html +=									'</span>'
+								html +=								'</a>'	
+								html +=							'</div><!--vid_thumbnail end-->'
+								html +=							'<div class="video_info ms br" style="width:700px">'
+								html +=								'<h3><a href="article_specific.html?bid='+data[a].bid+'" id="article_link">'+data[a].title+'</a></h3>' //加文章连接ajax
+								html +=								'<span>发表时间：'+data[a].create_time+'</span>'
+								html +=								'<p>'+data[a].content+'</p>'
+								html +=								'<ul class="cmn-i">'
+								html +=										'<li>'
+								html +=											'<a href="#" title="">'
+								html +=												'<i class="icon-thumbs_up"></i>'
+								html +=											'</a>'
+								html +=											'<span style="color:grey">'+data[a].like_count+'</span>'
+								html +=										'</li>'
+								html +=										'<li>'
+								html +=											'<a href="#" title="">'
+								html +=											'<img src="../dadabeauty/images/forward.jpg" style="height:17px" alt="">'	
+								html +=											'</a>'	
+								html +=											'<span style="color:grey">'+data[a].forward_count+'</span>'
+								html +=										'</li>'
+								html +=										'<li>'
+								html +=											'<a href=""><i class="icon-message"></i></a>'
+								html +=											'<span style="color:grey">'+data[a].comment_count+'</span>'
+								html +=										'</li>'
+								html +=								'</ul>'
+								html +=							'</div>'
+								html +=							'<div class="clearfix"></div>'
+								html +=						'</div><!--videoo end-->'
+								html +=					'</div>'
+								html +=				'</div>'
+								html +=				'<div class="col-xl-4 col-lg-3 col-md-3 col-sm-12" style="width:100px;">'
+								html +=					'<div class="icon-list">'
+								html +=						'<ul>'				
+								html +=							'<li><a href="#" title=""><i class="icon-cancel"></i></a></li>'
+								html +=						'</ul>'
+								html +=					'</div><!--icon-list end-->'
+								html +=				'</div>'
+								html +=			'</div>'
+								html +=		'</div><!--tb-pr end-->'
+								html +=	'</div><!--vidz_list end-->'
+							}
+							$('#article_content').html(html) 
+						}
+	
+					},
+				error:function(err){
+					console.log(err)
+				}
+			})
+	
+	// $('#article_link').click(() =>{
+	// 	window.location.href='article_specifix.html';
+	// })
+	
+	function searchfunction(){
+				var value = $('#search_product').val();
+				window.location.href = 'search.html?value='+value
+			}
+	</script>
+
+
+
+
+
+</body>
+
+</html>

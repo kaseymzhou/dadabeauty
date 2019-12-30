@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>达达美妆 产品详情</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<link rel="icon" href="images/Favicon.png">
+<link rel="stylesheet" type="text/css" href="css/animate.css">
+<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="css/fontello.css">
+<link rel="stylesheet" type="text/css" href="css/fontello-codes.css">
+<link rel="stylesheet" type="text/css" href="css/thumbs-embedded.css">
+<link rel="stylesheet" type="text/css" href="css/video-js.css">
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<link rel="stylesheet" type="text/css" href="css/responsive.css">
+<link rel="stylesheet" type="text/css" href="css/color.css">
+<style>
+#sku_pic{
+	width: 300px;
+	height:300px;
+	position: absolute;
+	left:36%;
+}
+#btn-comment{
+	width: 40px;
+	height:20px;
+}
+#comment_profile{
+	height: 50px;
+	width: 50px;
+	border-radius: 50%;
+}
+#scoreul li{
+        float:left;
+}
+#scoreul li label{
+	display: inline-block;
+	width:50px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+	
+		<header id='header_fix'>
+				<div class="top_bar">
+						<div class="container">
+							<div class="top_header_content">
+								<div class="menu_logo">
+									<a href="index.html" title="" class="logo">
+										<img src="images/logo.jpg" alt="">
+									</a>
+								</div>
+								<!--menu_logo end-->
+			
+								<div class="search_form">
+									<form>
+										<input type="text" id="search_product" name="search" placeholder="搜索产品">
+										<button type="button" onclick="searchfunction()">
+											<i class="icon-search"></i>
+										</button>
+									</form>
+								</div>
+								<!--search_form end-->
+			
+								<ul class="controls-lv" id='header_unlogged'>
+									<a href="login.html" title="" class="btn-default">登录</a>
+								</ul>
+			
+								<ul class="controls-lv" id='header_logged' style="display:none">
+									<li class="user-log">
+										<div class="user-ac-img">
+											<img src="" alt="" id='header_img'>
+										</div>
+										<div class="account-menu">
+											<h4 id='header_name'></h4>
+											<div class="sd_menu">
+												<ul class="mm_menu">
+													<li>
+														<span>
+															<i class="icon-user"></i>
+														</span>
+														<a href="user_account.html" title="">My Channel</a>
+													</li>
+													<li>
+														<span>
+															<i class="icon-logout"></i>
+														</span>
+														<a href="#" title="" id='logout'>Sign out</a>
+													</li>
+												</ul>
+											</div>
+											<!--sd_menu end-->
+									</li>
+									<li>
+										<a href="upload_article.html" title="" class="btn-default">发表美妆日记</a>
+									</li>
+								</ul>
+								<!--controls-lv end-->
+								<div class="clearfix"></div>
+							</div>
+							<!--top_header_content end-->
+						</div>
+					</div>
+					<!--header_content end-->
+					<div class="btm_bar">
+						<div class="container">
+							<div class="btm_bar_content">
+								<nav>
+									<ul>
+										<li><span display='inline-block' width='20px'></span></li>
+										<li><a href="index.html" title="">首页</a></li>
+										<li><a href="#" title="">眼妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=1" title="">眼线</a></li>
+													<li><a href="spu_show.html?subclass=2" title="">眼影</a></li>
+													<li><a href="spu_show.html?subclass=3" title="">睫毛膏</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="#" title="">眉妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=4" title="">眉笔</a></li>
+													<li><a href="spu_show.html?subclass=5" title="">眉粉</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="#" title="">底妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=6" title="">妆前乳</a></li>
+													<li><a href="spu_show.html?subclass=7" title="">粉底液</a></li>
+													<li><a href="spu_show.html?subclass=8" title="">遮瑕</a></li>
+													<li><a href="spu_show.html?subclass=9" title="">散粉</a></li>
+													<li><a href="spu_show.html?subclass=10" title="">腮红</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="#" title="">唇妆</a>
+											<div class="mega-menu">
+												<ul>
+													<li><a href="spu_show.html?subclass=11" title="">唇膏</a></li>
+													<li><a href="spu_show.html?subclass=12" title="">唇釉</a></li>
+													<li><a href="spu_show.html?subclass=13" title="">唇笔</a></li>
+												</ul>
+											</div>
+											<div class="clearfix"></div>
+										</li>
+										<li><a href="community.html" title="">社区</a></li>
+									</ul>
+								</nav>
+								<!--navigation end-->
+			
+			
+								<div class="clearfix"></div>
+							</div>
+							<!--btm_bar_content end-->
+						</div>
+					</div>
+					<!--btm_bar end-->
+		</header>	
+
+	<div id="sku_content"></div>
+
+	<section class="more_items_sec text-center">
+		<div class="container">
+			<a href="#" title="">
+				<svg width="19" height="24" viewBox="0 0 19 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M18.1618 24.0001H0.838235C0.374412 24.0001 0 23.6261 0 23.1628V5.86052C0 5.39727 0.374412 5.02332 0.838235 5.02332H18.1618C18.6256 5.02332 19 5.39727 19 5.86052V23.1628C19 23.6261 18.6256 24.0001 18.1618 24.0001ZM1.67647 22.3256H17.3235V6.69773H1.67647V22.3256Z" fill="#9494A0"/>
+					<g opacity="0.25">
+					<path opacity="0.25" d="M13.1324 4.18605C12.6685 4.18605 12.2941 3.81209 12.2941 3.34884V1.67442H6.70589V3.34884C6.70589 3.81209 6.33148 4.18605 5.86765 4.18605C5.40383 4.18605 5.02942 3.81209 5.02942 3.34884V0.83721C5.02942 0.373954 5.40383 0 5.86765 0H13.1324C13.5962 0 13.9706 0.373954 13.9706 0.83721V3.34884C13.9706 3.81209 13.5962 4.18605 13.1324 4.18605Z" fill="#9494A0"/>
+					</g>
+					<path d="M9.50001 19.3479C9.28487 19.3479 9.06972 19.267 8.90766 19.1024L5.92634 16.1275C5.59942 15.801 5.59942 15.2707 5.92634 14.9442C6.25325 14.6177 6.78413 14.6177 7.11104 14.9442L9.50001 17.3275L11.8862 14.9442C12.2131 14.6177 12.744 14.6177 13.0709 14.9442C13.3978 15.2707 13.3978 15.801 13.0709 16.1275L10.0924 19.1024C9.93031 19.267 9.71516 19.3479 9.50001 19.3479Z" fill="#9494A0"/>
+					<path d="M9.49999 18.4186C9.03617 18.4186 8.66176 18.0447 8.66176 17.5814V10.3256C8.66176 9.86236 9.03617 9.4884 9.49999 9.4884C9.96382 9.4884 10.3382 9.86236 10.3382 10.3256V17.5814C10.3382 18.0447 9.96382 18.4186 9.49999 18.4186Z" fill="#9494A0"/>
+					<g opacity="0.5">
+					<path opacity="0.5" d="M15.6471 6.69764C15.1832 6.69764 14.8088 6.32369 14.8088 5.86043V4.18601H4.19118V5.86043C4.19118 6.32369 3.81677 6.69764 3.35294 6.69764C2.88912 6.69764 2.51471 6.32369 2.51471 5.86043V3.34881C2.51471 2.88555 2.88912 2.5116 3.35294 2.5116H15.6471C16.1109 2.5116 16.4853 2.88555 16.4853 3.34881V5.86043C16.4853 6.32369 16.1109 6.69764 15.6471 6.69764Z" fill="#9494A0"/>
+					</g>
+				</svg>
+			</a>
+		</div>
+	</section><!--more_items_sec end-->
+
+</div><!--wrapper end-->
+
+
+
+<script src="js/video.js"></script>
+<script src="../dadabeauty/js/jquery-3.1.1.min.js"></script>
+<script src="../dadabeauty/js/jquery.min.js"></script>
+<script src="../dadabeauty/js/popper.js"></script>
+<script src="../dadabeauty/js/bootstrap.min.js"></script>
+<script src="../dadabeauty/js/flatpickr.js"></script>
+<script src="../dadabeauty/js/script.js"></script>
+<script src="../dadabeauty/js/headerjs.js"></script>
+
+<script>
+(function ($) {
+          $.getUrlParam = function (name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return r;
+            return null;
+          }
+        
+		 var sku_id = $.getUrlParam('sku')[2];
+		var username = window.localStorage.getItem('dabeauty_user')
+		 $.ajax({
+			 type:'get',
+			 url:'http://176.122.12.156:8000/v1/product/detail/'+sku_id+'?user='+username,
+			 success:function(result){
+				var data = result.data;
+				var html= '';
+				html+= '<section class="mn-sec">'
+				html+=			'<div class="container">'
+				html+=				'<div class="row">'
+				html+=					'<div class="col-lg-9">'
+				html+=						'<div class="mn-vid-sc single_video">'
+				html+=							'<div class="vid-1">'
+				html+=								'<div class="vid-pr">'
+				html+=									'<img  id="sku_pic" src="'+data.image+'" alt="">'
+				html+=								'</div><!--vid-pr end-->'
+				html+=								'<div class="vid-info">'
+				html+=									'<h3>'+data.name+'</h3>'
+				html+=									'<div class="info-pr">'
+				html+=										'<ul class="pr_links">'
+				html+=											'<form method="POST"><li id="ilikethis">'
+				html+=												'<button type="button" data-toggle="tooltip" data-placement="top" title="点赞该商品" onclick="likefunction()">点个赞'
+				html+=													'<i class="icon-thumbs_up_fill"></i>'
+				html+=												'</button>'
+				html+=												'<span>'+data.like_count+'</span>'
+				html+=											'</li></form>'
+				html+=											'<form method="POST"><li id="icollectthis" style="margin-top:5px;">'
+				html+=												'<button type="button" data-toggle="tooltip" data-placement="top" title="收藏该商品" onclick="collectfunction()">点我收藏'
+				html+=                                                      '<i class="icon-like"></i>'
+				//html+=													'<img src="images/collect.jpg" alt="" style="width:23px;height:23px;margin-right:13px;margin-top:5px">'
+				html+=												'</button>'
+				html+=											'</li></form>'
+				html+=										'</ul>'
+				html+=        '<div class="chekbox-lg" id="score_choice">'
+				html+=            '<span style="display:inline-block;margin-bottom:4px">请给此产品评分(越满意越高分)～</span>'
+				html+=            '<form action="POST" style="width:600px;">'
+				html+=                '<ul style="list-style-type:none;width:600px" id="scoreul">'
+				html+=                    '<li>'
+				html+=                        '<label>'
+				html+=                            '<span>1</span><input type="radio" name="score" value="1">'
+				html+=                            '<b class="checkmark"> </b>'
+				html+=                            ''
+				html+=                        '</label>'		
+				html+=                    '</li>'
+				html+=                    '<li>'
+				html+=                        '<label>'
+				html+=                            '<span>2</span><input type="radio" name="score" value="2">'
+				html+=                            '<b class="checkmark"> </b>'
+				html+=                            ''
+				html+=                        '</label>'		
+				html+=                    '</li>'
+				html+=                    '<li>'
+				html+=                        '<label>'
+				html+=                            '<span>3</span><input type="radio" name="score" value="3">'
+				html+=                            '<b class="checkmark"> </b>'
+				html+=                            ''
+				html+=                        '</label>'		
+				html+=                    '</li>'
+				html+=                    '<li>'
+				html+=                        '<label>'
+				html+=                            '<span>4</span><input type="radio" name="score" value="4">'
+				html+=                            '<b class="checkmark"> </b>'
+				html+=                            ''
+				html+=                        '</label>'		
+				html+=                   '</li>'
+				html+=                    '<li>'
+				html+=                        '<label>'
+				html+=                            '<span>5</span><input type="radio" name="score" value="5">'
+				html+=                            '<b class="checkmark"> </b>'
+				html+=                            ''
+				html+=                        '</label>'		
+				html+=                    '</li>'
+				html+=                    '<li style="width:40px">'
+				html+=                        '<button type="button" id="btn-score" style="width:40px" onclick="scorefunction()">'
+				html+=                        ''
+				html+=                            'OK'
+				html+=                        ''
+				html+=                        '</button>'		
+				html+=                    '</li>'
+				html+=                '</ul>'
+				html+=            '</form>'
+				html+=        '</div>'
+				html+=										'<div class="clearfix"></div>'
+				html+=										'<div class="clearfix"></div>'
+				html+=									'</div><!--info-pr end-->'
+				html+=								'</div><!--vid-info end-->'
+				html+=							'</div><!--vid-1 end-->'
+				html+=							'<div class="abt-mk">'
+				html+=								'<div class="clearfix"></div>'
+				html+=								'<div class="about-ch-sec">'
+				html+=									'<div class="abt-rw">'
+				html+=										'<h4>'+data.source+'</h4>'
+				html+=										'<ul>'
+				html+=											'<div><li><span>价格：'+data.price+'</span></li></div>'
+				html+=											'<div><li><span>折扣价：'+data.discount_price+'</span></li></div>'
+				html+=											'<div><li><span>链接：<a href="'+data.url+'">'+'去<strong>'+data.source+'</strong>商城进行购买'+'</a></span></li></div>'
+				html+=                                          '<div><li><span>特色：'+data.feature+'</span></li></div>'
+				html+=										'</ul>'
+				html+=									'</div>'													
+				html+=								'</div><!--about-ch-sec end-->'
+				html+=							'</div><!--abt-mk end-->'
+				html+=							'<div class="cmt-bx">'
+				html+=								'<ul class="cmt-pr">'
+				html+=									'<li><span>'+data.comment_details.total_comments_count+'</span>条评论与回复</li>'
+				html+=									'<li>'
+				html+=										'<span><i class="icon-sort_by"></i><a href="#" title="">排序依据：更新时间</a></span>'
+				html+=									'</li>'
+				html+=								'</ul>'
+				html+=								'<div class="clearfix"></div>'
+				html+=								'<div class="clearfix"></div>'
+				html+=								'<div class="vcp_inf pc">'
+				html+=									'<div class="vc_hd">'
+				html+=										'<img style="width:50px;height:50px;border-radius:50%" src="'+window.localStorage.getItem('dabeauty_img')+'" alt="" id="sku_main_comment">'
+				html+=									'</div>'
+				html+=									'<form method="POST">'
+				html+=										'<input type="text" placeholder="路过留个评论呗~" id="comment-content">'
+				html+=										'<button type="button" id="bt-comment" onclick="commentfunction()">添加评论</button>'
+				html+=									'</form>'
+				html+=									'<div class="clearfix"></div>'
+				html+=									'<div class="rt-cmt">'
+				html+=										'<a href="#" title="">'
+				html+=											'<i class="icon-cancel"></i>'
+				html+=										'</a>'
+				html+=										'<div class="clearfix"></div>'
+				html+=									'</div><!--vcp_inf end-->'
+				html+=								'</div><!--cmt-bx end-->'
+				html+=								'<ul class="cmn-lst">'
+				for (var i=0;i<data.comment_details.per_comment_detail.length;i++){
+					html+=									'<li>'
+					html+=										'<div class="vcp_inf">'
+					html+=											'<div class="vc_hd">'
+					html+=												'<a href="others_account.html?user='+data.comment_details.per_comment_detail[i].comment_username+'"><img id="comment_profile" src="'+data.comment_details.per_comment_detail[i].comment_user_profile+'" alt=""></a>'
+					html+=											'</div>'
+					html+=											'<div class="coments">'
+					html+=												'<h1><a href="others_account.html?user='+data.comment_details.per_comment_detail[i].comment_username+'">'+data.comment_details.per_comment_detail[i].comment_username+'</a> <small class="posted_dt"> . '+data.comment_details.per_comment_detail[i].comment_created_time+'</small><input type="hidden" id="c_id" value="'+data.comment_details.per_comment_detail[i].comment_id+'"></h1>'
+					html+=												'<p style="margin-top:5px">'+data.comment_details.per_comment_detail[i].comment_content+'</p>'
+					html+=												'<ul class="cmn-i">'
+					html+=													'<li>'
+					html+=														'<a href="#" title="">'
+					html+=															'<i class="icon-thumbs_up"></i>'
+					html+=														'</a>'
+					html+=														'<span>'+''+'</span>'
+					html+=													'</li>'
+					html+=												'</ul>'
+					html+=												'<div>'																
+					html+=													'<form method="POST">'
+					html+=														'<input type="text" id="add_reply'+data.comment_details.per_comment_detail[i].comment_id+'" placeholder="留下您的评论~" style="height:32px;width:600px;padding:10px;margin:5px">'
+					html+=														'<button type="button" id="bt-reply" onclick="replyfunction('+data.comment_details.per_comment_detail[i].comment_id+')" style="width:50px">评论</button>'
+					html+=													'</form>'
+					html+=												'</div><!--cmt-bx end-->'
+					html+=											'</div><!--coments end-->'
+					html+=										'</div><!--vcp_inf end-->'
+						for (var a=0;a<data.comment_details.per_comment_detail[i].comment_replies.length;a++){
+							html+=										'<div class="vcp_inf" style="margin-top:10px">'
+							html+=												'<div class="coments">'
+							html+=													'<p><h2 display="inline=block"><a href="others_account.html?user='+data.comment_details.per_comment_detail[i].comment_replies[a].reply_username+'">'+data.comment_details.per_comment_detail[i].comment_replies[a].reply_username+'</a>: <small class="posted_dt">.'+data.comment_details.per_comment_detail[i].comment_replies[a].reply_created_time+'</small></h2>'
+							html+=													'<span style="display:inline-block;width:10px"></span>'+data.comment_details.per_comment_detail[i].comment_replies[a].reply_content
+							html+=													'</p>'
+							html+=												'</div><!--coments end-->'
+							html+=											'</div><!--vcp_inf end-->'
+						}
+					html+=									'</li>'
+				}
+
+				html+=								'</ul><!--comment list end-->'
+				html+=							'</div>'
+				html+=						'</div><!--mn-vid-sc end--->'
+				html+=					'</div><!---col-lg-9 end-->'
+				//html+=					'<div class="col-lg-3">'
+				//html+=					'</div>'
+				html+='<div class="col-lg-3">' //(删除上面两行直接插入)
+				html+=		'<div class="sidebar">'
+				html+=			'<div class="vidz-prt">'
+				html+=				'<h2 class="sm-vidz">猜你喜欢</h2>'
+				html+=				'<h3 class="aut-vid">'
+				html+=					'<span></span>'
+				html+=					'<label class="switch">'
+				html+=						'<input type="checkbox">'
+				html+=						  '<b class="slider round"></b>'
+				html+=					'</label>' 
+				html+=				'</h3>'
+				html+=				'<div class="clearfix"></div>'
+				html+=			'</div><!--vidz-prt end-->'
+					for (var f=0;f<data.recom_sku_list.length;f++){
+						html+=			'<div class="videoo-list-ab">'
+						html+=				'<div class="videoo">'
+						html+=					'<div class="vid_thumbainl">'
+						html+=						'<a href="product_specific.html?sku='+data.recom_sku_list[f].sku_id+'" title="">'
+						html+=							'<img src="'+data.recom_sku_list[f].img+'" style="height:160px;width:160px">'
+						html+=						'</a>'	
+						html+=					'</div><!--vid_thumbnail end-->'
+						html+=					'<div class="video_info">'
+						html+=						'<h3><a href="product_specific.html?sku='+data.recom_sku_list[f].sku_id+'" title="">'+data.recom_sku_list[f].name+'</a></h3>'
+						html+=						'<a href="#" title="">'+data.recom_sku_list[f].source+'</a> <span class="verify_ic"><i class="icon-tick"></i></span>'
+						html+=						'<span>折扣价: <small class="posted_dt">'+data.recom_sku_list[f].discount_price+'</small></span>'
+						html+=					'</div>'
+						html+=				'</div><!--videoo end-->'
+						html+=			'</div><!--videoo-list-ab end-->'
+					}
+				html+=		'</div><!--side-bar end-->'
+				html+=	'</div>'
+				html+=				'</div>'
+				html+=			'</div>'
+				html+=		'</section><!--mn-sec end-->'
+				$('#sku_content').html(html)
+			 }
+			 
+		 });
+
+})(jQuery);
+
+var sku_id = $.getUrlParam('sku')[2];
+		 function likefunction() {
+				var token=localStorage.getItem("dabeauty_token");
+				var uid=window.localStorage.getItem('dabeauty_uid');
+				var post_data = {'uid':uid, 'sku_id':sku_id};
+					$.ajax({  
+							url: "http://176.122.12.156:8000/v1/product/like",
+							type: 'POST',  
+							data: JSON.stringify(post_data), 
+							beforeSend:function(request){
+										request.setRequestHeader("authorization",token)
+							}, 
+							dataType: 'JSON',  
+							success: function (data) {//成功的回调函数
+									if (data.code === 200){
+									alert('点赞成功！');
+									location.reload();
+							}else if(data.code === 201){
+								alert('取消点赞成功！');
+								location.reload();
+							}else {
+								alert(data.error);
+							}		
+						},
+						error: function (e) {
+								alert(data.error);
+						}
+					})
+    		}
+
+			function scorefunction() {
+				var token=localStorage.getItem("dabeauty_token");
+				var uid=window.localStorage.getItem('dabeauty_uid');
+				var score = $('#score_choice input[name="score"]:checked').val();
+				var post_data = {'uid':uid, 'sku_id':sku_id,'score':score};
+					$.ajax({  
+							url: "http://176.122.12.156:8000/v1/product/score",
+							type: 'POST',  
+							data: JSON.stringify(post_data), 
+							beforeSend:function(request){
+										request.setRequestHeader("authorization",token)
+							}, 
+							dataType: 'JSON',  
+							success: function (data) {//成功的回调函数
+									if (data.code === 200){
+									alert('评分成功！');
+									location.reload();
+							}else if(data.code === 201){
+								alert('重新评分成功！');
+								location.reload();
+							}else {
+								alert(data.error);
+							}		
+						},
+						error: function (e) {
+								alert(data.error);
+						}
+					})
+    		}
+
+			function commentfunction() {
+				var token=localStorage.getItem("dabeauty_token");
+				var uid=window.localStorage.getItem('dabeauty_uid');
+				var content = $("#comment-content").val();
+				var post_data = {'uid':uid, 'sku_id':sku_id,'content':content};
+					$.ajax({  
+							url: "http://176.122.12.156:8000/v1/product/comment",
+							type: 'POST',  
+							data: JSON.stringify(post_data), 
+							beforeSend:function(request){
+										request.setRequestHeader("authorization",token)
+							}, 
+							dataType: 'JSON',  
+							success: function (data) {//成功的回调函数
+									if (data.code === 200){
+									alert('评论成功！');
+									location.reload();
+							}else if(data.code === 201){
+								alert('删除评论成功！');
+								location.reload();
+							}else {
+								alert(data.error);
+							}		
+						},
+						error: function (e) {
+								alert(data.error);
+						}
+					})
+    		}
+
+			function replyfunction(c_id) {
+				var token=localStorage.getItem("dabeauty_token");
+				var uid=window.localStorage.getItem('dabeauty_uid');
+				var replyval = "#add_reply"+c_id; 
+				var content = $(replyval).val();
+				var c_id = c_id;
+				var post_data = {'c_id':c_id, 'uid':uid,'content':content};
+					$.ajax({  
+							url: "http://176.122.12.156:8000/v1/product/reply",
+							type: 'POST',  
+							data: JSON.stringify(post_data), 
+							beforeSend:function(request){
+										request.setRequestHeader("authorization",token)
+							}, 
+							dataType: 'JSON',  
+							success: function (data) {//成功的回调函数
+									if (data.code === 200){
+									alert('回复成功！');
+									location.reload();
+							}else if(data.code === 201){
+								alert('删除回复成功！');
+								location.reload();
+							}else {
+								alert(data.error);
+							}		
+						},
+						error: function (e) {
+								alert(data.error);
+						}
+					})
+    		}
+
+			function collectfunction() {
+				var token=localStorage.getItem("dabeauty_token");
+				var uid=window.localStorage.getItem('dabeauty_uid');
+				var post_data = {'uid':uid, 'sku_id':sku_id};
+					$.ajax({  
+							url: "http://176.122.12.156:8000/v1/product/collect",
+							type: 'POST',  
+							data: JSON.stringify(post_data), 
+							beforeSend:function(request){
+										request.setRequestHeader("authorization",token)
+							}, 
+							dataType: 'JSON',  
+							success: function (data) {//成功的回调函数
+									if (data.code === 200){
+									alert('收藏成功！');
+									location.reload();
+							}else if(data.code === 201){
+								alert('取消收藏成功！');
+								location.reload();
+							}else {
+								alert(data.error);
+							}		
+						},
+						error: function (e) {
+								alert(data.error);
+						}
+					})
+    		}
+
+			function searchfunction(){
+				var value = $('#search_product').val();
+				window.location.href = 'search.html?value='+value
+			}
+</script>
+</body>
+</html>
