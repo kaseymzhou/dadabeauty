@@ -46,17 +46,7 @@ class FocusView(View):
         follow_count = r.hget('user:%s'%uid,'follow_count')
         follow_count = follow_count.decode()
         follow_object = UserProfile.objects.filter(id=uid)
-        follows = FollowUser.objects.filter(fans_id=follow_object[0],isActive=True).order_by('-updated_time')
-        if not follows:
-            return JsonResponse({'code':10115,'data':'你还没有关注过别人哦'})
-        follow_info = []
-        for item in follows:
-            per_follow_info = {}
-            per_follow_info['id'] = item.followed_id.id
-            per_follow_info['username'] = item.followed_id.username
-            per_follow_info['profile'] = settings.PIC_URL+str(item.followed_id.profile_image_url)
-            per_follow_info['description']=item.followed_id.description
-            follow_info.append(per_follow_info)
+        follow_info = get_follow_info(follow_object)
         result = {'code':200,'data':{
                                     'uid':uid,
                                     'follow_count':follow_count,
@@ -71,17 +61,7 @@ class FansView(View):
         fans_count = r.hget('user:%s'%uid, 'fans_count')
         fans_count = fans_count.decode()
         fans_object = UserProfile.objects.filter(id=uid)
-        fans = FollowUser.objects.filter(followed_id=fans_object[0], isActive=True).order_by('-updated_time')
-        if not fans:
-            return JsonResponse({'code': 10116, 'data': '你还没有粉丝哦'})
-        fans_info = []
-        for item in fans:
-            per_fans_info = {}
-            per_fans_info['id'] = item.fans_id.id
-            per_fans_info['profile'] = settings.PIC_URL+str(item.fans_id.profile_image_url)
-            per_fans_info['username'] = item.fans_id.username
-            per_fans_info['description'] = item.fans_id.description
-            fans_info.append(per_fans_info)
+        fans_info = get_fans_info(fans_object)
         result = {'code': 200, 'data': {
                                         'uid': uid,
                                         'fans_count': fans_count,
@@ -98,17 +78,7 @@ class OthersFansView(View):
             fans_count = 0
         else:
             fans_count = fans_count.decode()
-        fans = FollowUser.objects.filter(followed_id=user_object[0], isActive=True).order_by('-updated_time')
-        if not fans:
-            return JsonResponse({'code': 10116, 'data': '你还没有粉丝哦'})
-        fans_info = []
-        for item in fans:
-            per_fans_info = {}
-            per_fans_info['id'] = item.fans_id.id
-            per_fans_info['profile'] = settings.PIC_URL+str(item.fans_id.profile_image_url)
-            per_fans_info['username'] = item.fans_id.username
-            per_fans_info['description'] = item.fans_id.description
-            fans_info.append(per_fans_info)
+        fans_info = get_fans_info(user_object)
         result = {'code': 200, 'data': {
                                         'uid': user_object[0].id,
                                         'username':username,
@@ -128,17 +98,7 @@ class OthersFocusView(View):
             follow_count = 0
         else:
             follow_count = follow_count.decode()
-        follows = FollowUser.objects.filter(fans_id=user_object[0],isActive=True).order_by('-updated_time')
-        if not follows:
-            return JsonResponse({'code':10115,'data':'你还没有关注过别人哦'})
-        follow_info = []
-        for item in follows:
-            per_follow_info = {}
-            per_follow_info['id'] = item.followed_id.id
-            per_follow_info['username'] = item.followed_id.username
-            per_follow_info['profile'] = settings.PIC_URL+str(item.followed_id.profile_image_url)
-            per_follow_info['description']=item.followed_id.description
-            follow_info.append(per_follow_info)
+        follow_info = get_follow_info(user_object)
         result = {'code':200,'data':{
                                     'uid':user_object[0].id,
                                     'username': username,
@@ -565,3 +525,31 @@ class Birthday_email(View):
         pass
     def post(self,request):
         pass
+
+def get_fans_info(user_object):
+    fans = FollowUser.objects.filter(followed_id=user_object[0], isActive=True).order_by('-updated_time')
+    if not fans:
+        return JsonResponse({'code': 10116, 'data': 'no fans'})
+    fans_info = []
+    for item in fans:
+        per_fans_info = {}
+        per_fans_info['id'] = item.fans_id.id
+        per_fans_info['profile'] = settings.PIC_URL + str(item.fans_id.profile_image_url)
+        per_fans_info['username'] = item.fans_id.username
+        per_fans_info['description'] = item.fans_id.description
+        fans_info.append(per_fans_info)
+    return fans_info
+
+def get_follow_info(follow_object):
+    follows = FollowUser.objects.filter(fans_id=follow_object[0], isActive=True).order_by('-updated_time')
+    if not follows:
+        return JsonResponse({'code': 10115, 'data': '你还没有关注过别人哦'})
+    follow_info = []
+    for item in follows:
+        per_follow_info = {}
+        per_follow_info['id'] = item.followed_id.id
+        per_follow_info['username'] = item.followed_id.username
+        per_follow_info['profile'] = settings.PIC_URL + str(item.followed_id.profile_image_url)
+        per_follow_info['description'] = item.followed_id.description
+        follow_info.append(per_follow_info)
+    return follow_info
