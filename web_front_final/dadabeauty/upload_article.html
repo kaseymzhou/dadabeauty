@@ -219,7 +219,7 @@
 
 <script>
 	// 多图片预览
-	function getObjectURL(file) {
+function getObjectURL(file) {
 	var url = null ; 
 	// 下面函数执行的效果是一样的，只是需要针对不同的浏览器执行不同的 js 函数而已
 	if (window.createObjectURL!=undefined) { // basic
@@ -234,6 +234,10 @@
 
 $("#blogpics").change(function(){
 	console.log(this.files)
+	if(this.files.length>6){
+		alert('已超出六张图片，请重新上传并查看图片预览');
+		return;
+	}
 	var arr = [];
 	for(var val of this.files){
 		var imgUrl = getObjectURL(val) ;
@@ -298,8 +302,6 @@ $("#blogpics").change(function(){
 				$.each($("#blogpics")[0].files, function(i, file) {
 				formdata.append("blogpics", file);
   			});
-
-
 				// formdata.append("blogpics",$("#blogpics")[0].files);
 				formdata.append('title',$('#text-title').val());
 				formdata.append('content',$('#text-content').val());

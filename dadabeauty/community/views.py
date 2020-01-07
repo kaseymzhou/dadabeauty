@@ -54,7 +54,7 @@ class Send_topics(View):
         # 添加图片
         files = request.FILES.getlist('blogpics')
         print(files)
-        for f in files:
+        for f in files[0:6]:
             dest = open('../dadabeauty/media/blogpics/' + f.name, 'wb+')
             for chunk in f.chunks():
                 dest.write(chunk)
