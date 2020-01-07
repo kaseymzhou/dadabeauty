@@ -302,58 +302,7 @@ class MyIndexCollect(View):
             result = {'code': 30108, 'error': '这个用户不存在 !'}
             return JsonResponse(result)
         author = author_list[0]
-        collect_send_list = []
-        # 取收藏博客
-        collect_list = Collect.objects.filter(is_active=True, uid=author).order_by('-create_time')
-        #collect_list = Collect.objects.filter('is_active' == True, 'uid' == author.id).extra(select={'create_time':
-    # 'DATE_FORMAT(create_time,"%%Y-%%m-%%d %%H:%%M:%%S")'}).order_by('create_time')
-        if not collect_list:
-            return JsonResponse({'code': 30112, 'data': '你还没有收藏文章哦'})
-        else:
-            for item in collect_list:
-                per_blog_info = {}
-                per_blog_info['title'] = item.b_id.title
-                per_blog_info['content'] = item.b_id.content[:50] + '……'
-                per_blog_info['bid'] = item.b_id.id
-                per_blog_info['create_time'] = timezone.localtime(item.b_id.create_time).strftime("%b %d %Y %H:%M:%S")
-                img_obj = Image.objects.filter(b_id=item.b_id)
-                if not img_obj:
-                    per_blog_info['img'] = ''
-                else:
-                    per_blog_info['img'] = settings.PIC_URL + str(img_obj[0].image)
-                    # 取点赞数
-                    like_count_exist = r.hexists('blog:%s' % item.b_id.id, 'like')
-                    if not like_count_exist:
-                        like_count = 0
-                    else:
-                        like_count = r.hget('blog:%s' % item.b_id.id, 'like')
-                        like_count = like_count.decode()
-                    per_blog_info['like_count'] = like_count
-                    # 取转发数
-                    forward_count_exist = r.hexists('blog:%s' % item.b_id.id, 'forward')
-                    if not forward_count_exist:
-                        forward_count = 0
-                    else:
-                        forward_count = r.hget('blog:%s' % item.b_id.id, 'forward')
-                        forward_count = forward_count.decode()
-                    per_blog_info['forward_count'] = forward_count
-                    # 取收藏数数
-                    collect_count_exist = r.hexists('blog:%s' % item.b_id.id, 'collect')
-                    if not collect_count_exist:
-                        collect_count = 0
-                    else:
-                        collect_count = r.hget('blog:%s' % item.b_id.id, 'collect')
-                        collect_count = collect_count.decode()
-                    per_blog_info['collect_count'] = collect_count
-                    # 取评论数
-                    comment_count_exist = r.hexists('blog:%s' % item.b_id.id, 'comment')
-                    if not comment_count_exist:
-                        comment_count = 0
-                    else:
-                        comment_count = r.hget('blog:%s' % item.b_id.id, 'comment')
-                        comment_count = comment_count.decode()
-                    per_blog_info['comment_count'] = comment_count
-                    collect_send_list.append(per_blog_info)
+        collect_send_list = get_collect_blogs(author)
         result = {'code': 200, 'data': collect_send_list}
         return JsonResponse(result)
     def post(self,request):
@@ -375,56 +324,7 @@ class OtherIndexCollect(View):
         user_info['uid'] = user.id
         user_info['description'] = user.description
         user_info['img'] = settings.PIC_URL + str(user.profile_image_url)
-        collect_send_list = []
-        # 取收藏博客
-        collect_list = Collect.objects.filter(is_active=True, uid=user).order_by('-create_time')
-        if not collect_list:
-            return JsonResponse({'code': 30112, 'data': '你还没有收藏文章哦'})
-        else:
-            for item in collect_list:
-                per_blog_info = {}
-                per_blog_info['title'] = item.b_id.title
-                per_blog_info['content'] = item.b_id.content[:50] + '……'
-                per_blog_info['bid'] = item.b_id.id
-                per_blog_info['create_time'] = timezone.localtime(item.b_id.create_time).strftime("%b %d %Y %H:%M:%S")
-                img_obj = Image.objects.filter(b_id=item.b_id)
-                if not img_obj:
-                    per_blog_info['img'] = ''
-                else:
-                    per_blog_info['img'] = settings.PIC_URL + str(img_obj[0].image)
-                    # 取点赞数
-                    like_count_exist = r.hexists('blog:%s' % item.b_id.id, 'like')
-                    if not like_count_exist:
-                        like_count = 0
-                    else:
-                        like_count = r.hget('blog:%s' % item.b_id.id, 'like')
-                        like_count = like_count.decode()
-                    per_blog_info['like_count'] = like_count
-                    # 取转发数
-                    forward_count_exist = r.hexists('blog:%s' % item.b_id.id, 'forward')
-                    if not forward_count_exist:
-                        forward_count = 0
-                    else:
-                        forward_count = r.hget('blog:%s' % item.b_id.id, 'forward')
-                        forward_count = forward_count.decode()
-                    per_blog_info['forward_count'] = forward_count
-                    # 取收藏数数
-                    collect_count_exist = r.hexists('blog:%s' % item.b_id.id, 'collect')
-                    if not collect_count_exist:
-                        collect_count = 0
-                    else:
-                        collect_count = r.hget('blog:%s' % item.b_id.id, 'collect')
-                        collect_count = collect_count.decode()
-                    per_blog_info['collect_count'] = collect_count
-                    # 取评论数
-                    comment_count_exist = r.hexists('blog:%s' % item.b_id.id, 'comment')
-                    if not comment_count_exist:
-                        comment_count = 0
-                    else:
-                        comment_count = r.hget('blog:%s' % item.b_id.id, 'comment')
-                        comment_count = comment_count.decode()
-                    per_blog_info['comment_count'] = comment_count
-                    collect_send_list.append(per_blog_info)
+        collect_send_list = get_collect_blogs(user)
         result = {'code': 200, 'data': collect_send_list,'user':user_info}
         return JsonResponse(result)
 
@@ -876,3 +776,57 @@ def order_by_creatime(blog_send_list):
         for c in range(r, len(blog_send_list)):
             if blog_send_list[r]['order_create_time'] < blog_send_list[c]['order_create_time']:
                 blog_send_list[r], blog_send_list[c] = blog_send_list[c], blog_send_list[r]
+
+# def 取收藏的博客信息列表
+def get_collect_blogs(person):
+    collect_send_list = []
+    # 取收藏博客
+    collect_list = Collect.objects.filter(is_active=True, uid=person).order_by('-create_time')
+    if not collect_list:
+        return JsonResponse({'code': 30112, 'data': '还没有收藏文章哦'})
+    else:
+        for item in collect_list:
+            per_blog_info = {}
+            per_blog_info['title'] = item.b_id.title
+            per_blog_info['content'] = item.b_id.content[:50] + '……'
+            per_blog_info['bid'] = item.b_id.id
+            per_blog_info['create_time'] = timezone.localtime(item.b_id.create_time).strftime("%b %d %Y %H:%M:%S")
+            img_obj = Image.objects.filter(b_id=item.b_id)
+            if not img_obj:
+                per_blog_info['img'] = ''
+            else:
+                per_blog_info['img'] = settings.PIC_URL + str(img_obj[0].image)
+                # 取点赞数
+                like_count_exist = r.hexists('blog:%s' % item.b_id.id, 'like')
+                if not like_count_exist:
+                    like_count = 0
+                else:
+                    like_count = r.hget('blog:%s' % item.b_id.id, 'like')
+                    like_count = like_count.decode()
+                per_blog_info['like_count'] = like_count
+                # 取转发数
+                forward_count_exist = r.hexists('blog:%s' % item.b_id.id, 'forward')
+                if not forward_count_exist:
+                    forward_count = 0
+                else:
+                    forward_count = r.hget('blog:%s' % item.b_id.id, 'forward')
+                    forward_count = forward_count.decode()
+                per_blog_info['forward_count'] = forward_count
+                # 取收藏数数
+                collect_count_exist = r.hexists('blog:%s' % item.b_id.id, 'collect')
+                if not collect_count_exist:
+                    collect_count = 0
+                else:
+                    collect_count = r.hget('blog:%s' % item.b_id.id, 'collect')
+                    collect_count = collect_count.decode()
+                per_blog_info['collect_count'] = collect_count
+                # 取评论数
+                comment_count_exist = r.hexists('blog:%s' % item.b_id.id, 'comment')
+                if not comment_count_exist:
+                    comment_count = 0
+                else:
+                    comment_count = r.hget('blog:%s' % item.b_id.id, 'comment')
+                    comment_count = comment_count.decode()
+                per_blog_info['comment_count'] = comment_count
+                collect_send_list.append(per_blog_info)
+        return collect_send_list

@@ -206,34 +206,14 @@ class ProductsDetailView(View):
             print(username)
             # 未登录的用户 --> 随机推荐
             if username == 'null':
-                for i in range(3):
-                    per_recom = {}
-                    random_num = random.randint(1,100)
-                    sku_obj = Sku.objects.filter(id=random_num)
-                    sku_obj = sku_obj[0]
-                    per_recom['sku_id'] = sku_obj.id
-                    per_recom['img'] = str(sku_obj.default_img_url)
-                    per_recom['name'] = sku_obj.name
-                    per_recom['discount_price'] = str(sku_obj.discount_price)
-                    per_recom['source'] = sku_obj.source_id.name
-                    recom_sku_list.append(per_recom)
+                random_recom(recom_sku_list)
             else:
                 # 新用户/未对产品评过分的用户 --> 随机推荐
                 user_obj = UserProfile.objects.filter(username=username)
                 user_obj = user_obj[0]
                 predict_obj = PredictSkuScore.objects.filter(user_id=user_obj,sku_id=sku_item)
                 if not predict_obj:
-                    for i in range(3):
-                        per_recom = {}
-                        random_num = random.randint(1, 100)
-                        sku_obj = Sku.objects.filter(id=random_num)
-                        sku_obj = sku_obj[0]
-                        per_recom['sku_id'] = sku_obj.id
-                        per_recom['img'] = str(sku_obj.default_img_url)
-                        per_recom['name'] = sku_obj.name
-                        per_recom['discount_price'] = str(sku_obj.discount_price)
-                        per_recom['source'] = sku_obj.source_id.name
-                        recom_sku_list.append(per_recom)
+                    random_recom(recom_sku_list)
                 else:
                     # 对产品评过分的老用户 --> 调取数据库预测值进行推荐
                     predict_obj = predict_obj[0]
@@ -272,20 +252,8 @@ class ProductsDetailView(View):
                                                                         'reply_uid':reply_uid,
                                                                         'reply_content' : reply_content,
                                                                         'reply_created_time':reply_created_time
-                                                                         ,
-                                                                    {
-                                                                        'reply_username' : reply_username,
-                                                                        'reply_uid':reply_uid,
-                                                                        'reply_content' : reply_content,
-                                                                        'reply_created_time':reply_created_time
-                                                                         ,
-                                                                    {
-                                                                        'reply_username' : reply_username,
-                                                                        'reply_uid':reply_uid,
-                                                                        'reply_content' : reply_content,
-                                                                        'reply_created_time':reply_created_time
                                                                     }
-                                                                    ,
+                                                                         ,
                                                                     ...  
                                                                     ]
 
@@ -342,7 +310,7 @@ class ProductsDetailView(View):
 
 
         # 写入缓存
-            r.setex('index_detail_%s'%sku_id,3,json.dumps(sku_details,cls=JsonCustomEncoder))
+            r.setex('index_detail_%s'%sku_id,5,json.dumps(sku_details,cls=JsonCustomEncoder))
             redis_detail = r.get('index_detail_%s' % sku_id)
             sku_details = json.loads(redis_detail)
 
@@ -476,7 +444,7 @@ class LikeP(View):
                 r.zadd('product:like',{'product:%s'%sku_id:0})
             # redis做评论计数加1
             r.zincrby('product:like',1,'product:%s'%sku_id)
-                # mysql数据库录入
+            # mysql数据库录入
             LikeProduct.objects.create(uid=likeuser[0], sku_id=likesku[0])
             result = {'code':200,'data':'点赞成功'}
             return JsonResponse(result)
@@ -574,17 +542,7 @@ class CollectProductView(View):
         collect_list = Collect.objects.filter(uid=user_obj[0],isActive=True).order_by('-updated_time')
         if not collect_list:
             return JsonResponse({'code':10117,'data':'你还没收藏产品哦'})
-        for item in collect_list:
-            per_sku_info = {}
-            per_sku_info['id'] = item.sku_id.id
-            per_sku_info['name']=item.sku_id.name
-            per_sku_info['sku_img']=str(item.sku_id.default_img_url)
-            collect_count = r.hget('product:%s'%item.sku_id.id,'collect')
-            if not collect_count:
-                collect_count = 0
-            else:
-                per_sku_info['collect_count']=collect_count.decode()
-            sku_info_list.append(per_sku_info)
+        sku_info_list = get_collect_sku(collect_list, sku_info_list)
         result = {'code':200,'data':{
                                     'uid':uid,
                                     'sku_info':sku_info_list}
@@ -605,17 +563,7 @@ class OthersCollectProductView(View):
                                         'profile_img':settings.PIC_URL + str(user_obj[0].profile_image_url),
                                         'description':user_obj[0].description}
                                  })
-        for item in collect_list:
-            per_sku_info = {}
-            per_sku_info['id'] = item.sku_id.id
-            per_sku_info['name']=item.sku_id.name
-            per_sku_info['sku_img']=str(item.sku_id.default_img_url)
-            collect_count = r.hget('product:%s'%item.sku_id.id,'collect')
-            if not collect_count:
-                collect_count = 0
-            else:
-                per_sku_info['collect_count']=collect_count.decode()
-            sku_info_list.append(per_sku_info)
+        sku_info_list = get_collect_sku(collect_list, sku_info_list)
         result = {'code':200,'data':{
                                     'uid':user_obj[0].id,
                                     'username':username,
@@ -624,9 +572,6 @@ class OthersCollectProductView(View):
                                     'sku_info':sku_info_list}
                   }
         return JsonResponse(result)
-
-
-
 
 class SkuSearch(View):
     def post(self,request):
@@ -668,3 +613,31 @@ class SkuSearch(View):
                                                           'base_url':settings.PIC_URL}}
         print(result)
         return JsonResponse(result)
+
+def random_recom(recom_sku_list):
+    for i in range(3):
+        per_recom = {}
+        random_num = random.randint(1, 100)
+        sku_obj = Sku.objects.filter(id=random_num)
+        sku_obj = sku_obj[0]
+        per_recom['sku_id'] = sku_obj.id
+        per_recom['img'] = str(sku_obj.default_img_url)
+        per_recom['name'] = sku_obj.name
+        per_recom['discount_price'] = str(sku_obj.discount_price)
+        per_recom['source'] = sku_obj.source_id.name
+        recom_sku_list.append(per_recom)
+    return recom_sku_list
+
+def get_collect_sku(collect_list,sku_info_list):
+    for item in collect_list:
+        per_sku_info = {}
+        per_sku_info['id'] = item.sku_id.id
+        per_sku_info['name'] = item.sku_id.name
+        per_sku_info['sku_img'] = str(item.sku_id.default_img_url)
+        collect_count = r.hget('product:%s' % item.sku_id.id, 'collect')
+        if not collect_count:
+            collect_count = 0
+        else:
+            per_sku_info['collect_count'] = collect_count.decode()
+        sku_info_list.append(per_sku_info)
+    return sku_info_list

@@ -283,7 +283,7 @@ class Users(View):
         random_int = random.randint(1000, 9999)
         code_str = username + '_' + str(random_int)
         code_str_bs = base64.urlsafe_b64encode(code_str.encode())
-        # 将随机码组合存储在redis中 可以扩展成只存储1-3天
+        # 将随机码组合存储在redis中
         r.set('email_active_%s' % (username), code_str)
         active_url = 'http://127.0.0.1:7001/dadabeauty/active.html?code=%s' % (code_str_bs.decode())
         send_active_email.delay(email, active_url)
@@ -310,7 +310,7 @@ def users_active(request):
         pass
     try:
         code_str = base64.urlsafe_b64decode(code.encode())
-        # username_9999
+        # username_1234
         new_code_str = code_str.decode()
         username, rcode = new_code_str.split('_')
     except Exception as e:
@@ -384,7 +384,6 @@ class OAuthWeiboView(View):
                 # 之前微博登陆过，但是没有执行微博绑定注册
                 data = {'code': '201', 'uid': wuid}
                 return JsonResponse(data)
-        return JsonResponse({'code': 200, 'error': 'test'})
 
     def post(self, request):
         # 绑定注册
@@ -566,4 +565,3 @@ class Birthday_email(View):
         pass
     def post(self,request):
         pass
-
