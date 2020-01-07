@@ -18,7 +18,7 @@ from dtoken.views import make_token
 from tools.logging_check import logging_check
 from community.models import *
 from product.models import *
-from .tasks import send_active_mail
+from .tasks import send_active_email
 # Create your views here.
 
 r = redis.Redis(host='127.0.0.1',port=6379,db=0)
@@ -28,7 +28,7 @@ class Test(View):
     def post(self,request):
         return JsonResponse({'code':200})
 
-# 访问他人主页
+# 访问他人主页 (取头像、昵称、个性签名)
 class OthersProfile(View):
     def get(self,request,ouid):
         ousers = UserProfile.objects.filter(id=ouid)
@@ -38,7 +38,6 @@ class OthersProfile(View):
         description = ouser.description
         data = {'img':img,'username':username,'description':description}
         return JsonResponse({'code':200,'data':data})
-
 
 # 用户个人主页'我的关注'页面展示
 class FocusView(View):
@@ -212,7 +211,6 @@ class ChangePersonalInfo(View):
 
         return JsonResponse({'code': 200, 'data': {'token': token.decode(),'username':new_username}})
 
-
 # 用户个人主页'修改密码'页面展示
 class ChangePassword(View):
     @logging_check
@@ -240,7 +238,6 @@ class ChangePassword(View):
             user.password = m.hexdigest()
             user.save()
         return JsonResponse({'code':200,'data':'密码修改成功'})
-
 
 # 用户注册
 class Users(View):
@@ -289,7 +286,7 @@ class Users(View):
         # 将随机码组合存储在redis中 可以扩展成只存储1-3天
         r.set('email_active_%s' % (username), code_str)
         active_url = 'http://127.0.0.1:7001/dadabeauty/active.html?code=%s' % (code_str_bs.decode())
-        # send_active_mail.delay(email, active_url)
+        send_active_email.delay(email, active_url)
         return JsonResponse({'code': 200, 'username': username, 'uid':create_uid,'data': {'token': token.decode()}})
 
 # 发送激活邮件函数
@@ -338,7 +335,6 @@ def users_active(request):
     r.delete('email_active_%s' % (username))
     result = {'code': 200, 'data':'激活成功'}
     return JsonResponse(result)
-
 
 class OAuthWeiboUrlView(View):
     def get(self, request):
@@ -457,7 +453,6 @@ def get_weibo_login_url():
     return url
 
 # 用户挑选感兴趣的部分
-
 class InterestedChoiceView(View):
     @logging_check
     def get(self,request):
@@ -565,7 +560,7 @@ class AddFan(View):
                     result = {'code':201,'data':'取消关注成功'}
                     return JsonResponse(result)
 
-# 自动发送生日邮件
+#todo 自动发送生日邮件
 class Birthday_email(View):
     def get(self,request):
         pass

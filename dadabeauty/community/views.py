@@ -3,7 +3,6 @@
 import redis
 from django.http import JsonResponse
 from django.utils import timezone
-
 from community.models import Blog, Tag, Forward, Comment, Reply, Collect, Image, Tag_blog,LikeCommunity
 from dadabeauty import settings
 from tools.logging_check import logging_check
@@ -15,8 +14,7 @@ from user.models import UserProfile
 
 r = redis.Redis(host='127.0.0.1', port=6379, db=1)
 
-
-# 发表博客文章（已完成）
+# 发表博客页面
 class Send_topics(View):
     @logging_check
     def post(self, request):
@@ -83,8 +81,7 @@ class Send_topics(View):
         res = {'code': 200, 'username': author.username, 'tags_list': tags_list}
         return JsonResponse(res)
 
-
-# 不需要登录也可以查看所有博客
+# 不需要登录也可以查看所有博客 -> community模块主页面
 def index(request):
     # http://127.0.0.1:8000/v1/community/index  访问所有博客
     if request.method == 'GET':
@@ -142,8 +139,7 @@ def index(request):
         result = {'code': 30107, 'error': '请使用GET请求!'}
         return JsonResponse(result)
 
-
-
+# 我的主页 -> 已发表博客展示页面
 class MyIndex(View):
     @logging_check
     def get(self,request):
@@ -215,6 +211,7 @@ class MyIndex(View):
         #order_by_creatime(blog_send_list)
         #result = {'code': 200, 'data': blog_send_list}
 
+# 删除自己已发表的博客
 class DeleteBlog(View):
     @logging_check
     def get(self,request):
@@ -226,6 +223,7 @@ class DeleteBlog(View):
         blog_obj.save()
         return JsonResponse({'code':200,'data':'删除成功'})
 
+# 他人主页 -> 已发表博客展示页面
 class OtherIndex(View):
     def get(self, request):
         # http://127.0.0.1:8000/v1/community/index?user=xxx  访问特定人的博客主页
@@ -293,7 +291,7 @@ class OtherIndex(View):
         result = {'code': 200, 'data': blog_send_list,'user':user_info}
         return JsonResponse(result)
 
-
+# 我的主页 -> 收藏博客展示页面
 class MyIndexCollect(View):
     @logging_check
     def get(self,request):
@@ -362,7 +360,7 @@ class MyIndexCollect(View):
         result = {'code': 30107, 'error': '请使用GET请求!'}
         return JsonResponse(result)
 
-
+# 他人主页 -> 收藏博客展示页面
 class OtherIndexCollect(View):
     def get(self, request):
         # http://127.0.0.1:8000/v1/community/index_collect?user=xxx  访问特定人的收藏列表
@@ -434,8 +432,7 @@ class OtherIndexCollect(View):
         result = {'code': 30107, 'error': '请使用GET请求!'}
         return JsonResponse(result)
 
-
-
+# 博客详细内容页面
 class DeatilBlog(View):
     def post(self,request):
         result = {'code': 30107, 'error': '请使用GET请求!'}
@@ -455,8 +452,7 @@ class DeatilBlog(View):
         result = get_detail_blog(blog)
         return JsonResponse(result)
 
-
-
+# 转发博客
 class ForwardBlog(View):
     @logging_check
     def get(self,request):
@@ -482,8 +478,7 @@ class ForwardBlog(View):
         result = {'code': 200, 'data':'转发成功'}
         return JsonResponse(result)
 
-
-
+# 点赞博客
 class LikeBlog(View):
     @logging_check
     def get(self,request):
@@ -525,8 +520,7 @@ class LikeBlog(View):
         result = {'code': 30107, 'error': '请使用GET请求!'}
         return JsonResponse(result)
 
-
-
+# 评论
 class BlogComment(View):
     @logging_check
     def post(self,request):
@@ -572,8 +566,7 @@ class BlogComment(View):
         result = {'code': 200, 'data': '删除评论成功'}
         return JsonResponse(result)
 
-
-# 评论的回复
+# 回复评论（二级评论）
 class BlogReply(View):
     @logging_check
     def post(self,request):
@@ -620,13 +613,12 @@ class BlogReply(View):
         result = {'code': 200, 'data': '删除回复成功'}
         return JsonResponse(result)
 
-
+# 收藏博客文章
 class CollectBlogs(View):
     @logging_check
     def post(self,request):
         result = {'code': 30117, 'error': '请给我GET请求!'}
         return JsonResponse(result)
-
     @logging_check
     def get(self,request):
         # http://127.0.0.1:8000/v1/community/collect?authorname=xxx&id=xxx
@@ -658,8 +650,7 @@ class CollectBlogs(View):
                 result = {'code': 200, 'data': '收藏成功'}
                 return JsonResponse(result)
 
-
-# 取原博客
+# def 取原博客
 def get_first_blog(blog_list, blog_send_list):
     for item in blog_list:
         per_blog = {}
@@ -718,8 +709,7 @@ def get_first_blog(blog_list, blog_send_list):
         per_blog['img'] = image_list
         blog_send_list.append(per_blog)
 
-
-# 取博客详细信息
+# def 取博客详细信息
 def get_detail_blog(blog):
     # 获取用户名
     data = {}
@@ -815,8 +805,7 @@ def get_detail_blog(blog):
     result = {'code': 200, 'data': data}
     return result
 
-
-# 取转发博客
+# def 取转发博客
 def get_forward_blog(forward_list, blog_send_list):
     for item in forward_list:
         forward_blog = {}
@@ -881,64 +870,9 @@ def get_forward_blog(forward_list, blog_send_list):
         forward_blog['img'] = image_list
         blog_send_list.append(forward_blog)
 
-
-# 进行排序
+# def 将原创博客与转发博客进行时间排序
 def order_by_creatime(blog_send_list):
     for r in range(0, len(blog_send_list) - 1):
         for c in range(r, len(blog_send_list)):
             if blog_send_list[r]['order_create_time'] < blog_send_list[c]['order_create_time']:
                 blog_send_list[r], blog_send_list[c] = blog_send_list[c], blog_send_list[r]
-
-
-# 取收藏博客
-def get_collect_blog(collect_list, blog_send_list):
-    for item in collect_list:
-        collect_blog = {}
-        blog_object = item.b_id
-        collect_blog['id'] = blog_object.id
-        collect_blog['title'] = blog_object.title
-        collect_blog['content'] = blog_object.content
-        collect_blog['username'] = blog_object.username
-        collect_blog['create_time'] = timezone.localtime(blog_object.create_time)
-        tags_object_list = Tag_blog.objects.filter(blog_id_fk=blog_object)
-        total_tags_list = []
-        # 取tag
-        for tag_obj in tags_object_list:
-            per_tag_name = tag_obj.tag_id_fk.tag_name
-            total_tags_list.append(per_tag_name)
-        collect_blog['tags'] = total_tags_list
-        # 取点赞数
-        like_count_exist = r.hexists('blog:%s' % blog_object.id, 'like')
-        if not like_count_exist:
-            like_count = 0
-        else:
-            like_count = r.hget('blog:%s' % blog_object.id, 'like')
-        collect_blog['like_count'] = like_count
-        # 取转发数
-        forward_count_exist = r.hexists('blog:%s' % blog_object.id, 'forward')
-        if not forward_count_exist:
-            forward_count = 0
-        else:
-            forward_count = r.hget('blog:%s' % blog_object.id, 'forward')
-        collect_blog['forward_count'] = forward_count
-        # 取收藏数数
-        collect_count_exist = r.hexists('blog:%s' % blog_object.id, 'collect')
-        if not collect_count_exist:
-            collect_count = 0
-        else:
-            collect_count = r.hget('blog:%s' % blog_object.id, 'collect')
-        collect_blog['collect_count'] = collect_count
-        # 取评论数
-        comment_count_exist = r.hexists('blog:%s' % blog_object.id, 'comment')
-        if not comment_count_exist:
-            comment_count = 0
-        else:
-            comment_count = r.hget('blog:%s' % blog_object.id, 'comment')
-        collect_blog['comment_count'] = comment_count
-        # 取图片
-        images = Image.objects.filter(b_id=blog_object)
-        image_list = []
-        for item in images:
-            image_list.append(settings.PIC_URL + str(item.image))
-        collect_blog['img'] = image_list
-        blog_send_list.append(collect_blog)

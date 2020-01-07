@@ -4,7 +4,7 @@ from dadabeauty.celery import app
 
 @app.task
 
-def send_active_mail(email, code_url):
+def send_active_email(email, code_url):
     subject = 'DaDa-Beauty用户激活邮件'
     html_message = '''
         <p>亲爱的DaDa-Beauty用户：</p>

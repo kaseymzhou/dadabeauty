@@ -1,5 +1,4 @@
 import random
-
 from django.conf import settings
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -205,6 +204,7 @@ class ProductsDetailView(View):
             recom_sku_list = []
             username = request.GET.get('user')
             print(username)
+            # 未登录的用户 --> 随机推荐
             if username == 'null':
                 for i in range(3):
                     per_recom = {}
@@ -218,6 +218,7 @@ class ProductsDetailView(View):
                     per_recom['source'] = sku_obj.source_id.name
                     recom_sku_list.append(per_recom)
             else:
+                # 新用户/未对产品评过分的用户 --> 随机推荐
                 user_obj = UserProfile.objects.filter(username=username)
                 user_obj = user_obj[0]
                 predict_obj = PredictSkuScore.objects.filter(user_id=user_obj,sku_id=sku_item)
@@ -234,6 +235,7 @@ class ProductsDetailView(View):
                         per_recom['source'] = sku_obj.source_id.name
                         recom_sku_list.append(per_recom)
                 else:
+                    # 对产品评过分的老用户 --> 调取数据库预测值进行推荐
                     predict_obj = predict_obj[0]
                     product_type = predict_obj.product_type
                     recom_list = PredictSkuScore.objects.filter(product_type=product_type).order_by('-predict_score')
@@ -654,12 +656,6 @@ class SkuSearch(View):
                 'error':'page number is wrong'})
         sku_list = []
         for result in page.object_list:
-            # d = {}
-            # d['car_id'] = page.object_list[i].object.car_id
-            # d['brand'] = page.object_list[i].object.brand
-            # d['pic_url'] = page.object_list[i].object.pic_url
-            # d['score_kb'] = page.object_list[i].object.score_kb
-            # d['series'] = page.object_list[i].object.series
             d = {}
             d['sku_id'] = result.object.id
             d['name'] = result.object.name
