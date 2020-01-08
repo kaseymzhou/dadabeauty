@@ -11,7 +11,7 @@ from django.shortcuts import render
 def tokens(request):
     # 登录
     if not request.method == 'POST':
-        result = {'code':10001,'error':'请使用post提交'}
+        result = {'code':40001,'error':'请使用post提交'}
         return JsonResponse(result)
     data = request.body
     json_obj = json.loads(data)
@@ -21,7 +21,7 @@ def tokens(request):
     #查询用户
     user = UserProfile.objects.filter(username=username)
     if not user:
-        result = {'code':10002,'error':'用户名或密码错误'}
+        result = {'code':40002,'error':'用户名或密码错误'}
         return JsonResponse(result)
     user = user[0]
     uid = user.id
@@ -31,7 +31,7 @@ def tokens(request):
     m = hashlib.md5()
     m.update(password.encode())
     if m.hexdigest() != user.password:
-        result = {'code':10003,'error':'用户名或密码错误'}
+        result = {'code':40003,'error':'用户名或密码错误'}
         return JsonResponse(result)
     # 生成token
     token = make_token(username)

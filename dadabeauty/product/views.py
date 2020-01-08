@@ -28,7 +28,6 @@ class IndexShow(View):
         :return:
         """
         # 127.0.0.1:8000/v1/product/index
-
         # 0. 获取所有产品详细内容
         catalog_list = Sku.objects.all()
         # 1. 建立列表储存点赞前10的sku信息
@@ -69,44 +68,6 @@ class IndexShow(View):
 
 # 点进子类连接，显示子类产品（按updated_time从新到旧排）
 class ProductsListView(View):
-    # def get(self,request,subclass_id):
-    #     """
-    #     :param request:
-    #     :param subclass_id:子类id
-    #     :param page_num:第几页
-    #     :param page_size:每页显示多少项
-    #     :return:
-    #     """
-    #     #  127.0.0.1:8000/v1/product/catalogs/1/1/?page=1
-    #     # 0. 获取url传递参数值
-    #     page_num = request.GET.get('page',1)
-    #     # 1. 获取分类下的spu列表
-    #     spu_list_ids = Spu.objects.filter(sb_id=subclass_id).values("id")
-    #     sku_list = Sku.objects.filter(spu_id__in=spu_list_ids).order_by("-updated_time")
-    #     # 2.分页
-    #     # 创建分页对象，指定列表、页大小
-    #     page_num = int(page_num)
-    #     page_size = 18
-    #     try:
-    #         paginator = Paginator.page(sku_list,page_size)
-    #         # 获取指定页码的数据
-    #         page_skus = paginator.page(page_num)
-    #         page_skus_json = []
-    #         for sku in page_skus:
-    #             sku_dict = {}
-    #             sku_dict['skuid'] = sku.id
-    #             sku_dict['name'] = sku.name
-    #             sku_dict['image'] = str(sku.default_image_url)
-    #             sku_dict['source']=sku.source_id.name
-    #             page_skus_json.append(sku_dict)
-    #     except:
-    #         result = {'code': 40200, 'error': '页数有误，小于0或者大于总页数'}
-    #         return JsonResponse(result)
-    #     result = {'code': 200,
-    #               'data': page_skus_json,
-    #               'paginator': {'pagesize': page_size, 'total': len(sku_list)},
-    #               'base_url': settings.PIC_URL}
-    #     return JsonResponse(result)
     def get(self,request,subclass_id):
         """
         :param request:
@@ -117,7 +78,7 @@ class ProductsListView(View):
         spu_list_ids = Spu.objects.filter(sb_id=subclass_id).values("id")
         sku_list = Sku.objects.filter(spu_id__in=spu_list_ids).order_by("-updated_time")
         if not sku_list:
-            return JsonResponse({'code':'30111','error':"未能查询到该商品"})
+            return JsonResponse({'code':20001,'error':"未能查询到该商品"})
         sku_show_list = []
         for sku in sku_list:
             sku_dict = {}
@@ -169,7 +130,7 @@ class ProductsDetailView(View):
                 sku_item = Sku.objects.get(id=sku_id)
             except:
                 # 判断是否有当前sku
-                result = {'code': 30300, 'error': "相关产品不存在", }
+                result = {'code': 20002, 'error': "相关产品不存在", }
                 return JsonResponse(result)
 
             sku_details['image'] = str(sku_item.default_img_url)
@@ -280,7 +241,7 @@ class ProductsDetailView(View):
                 uid = item.uid.id
                 users = UserProfile.objects.filter(id=uid)
                 if not users:
-                    return JsonResponse({'code':30112,'data':'查看该用户评论失败'})
+                    return JsonResponse({'code':20003,'data':'查看该用户评论失败'})
                 comment_username = users[0].username
                 one_comment_info['comment_username']=comment_username
                 comment_user_profile = users[0].profile_image_url
@@ -330,7 +291,7 @@ class Comment_product(View):
     def post(self,request):
         data = request.body
         if not data:
-            result = {'code': '30101', 'error': '请填写评论'}
+            result = {'code': 20004, 'error': '请填写评论'}
             return JsonResponse(result)
         json_obj = json.loads(data)
         sku_id = json_obj.get('sku_id')
@@ -353,13 +314,13 @@ class Comment_product(View):
     def delete(self,request):
         data = request.body
         if not data:
-            result = {'code': '30102', 'error': '删除失败'}
+            result = {'code': 20005, 'error': '删除失败'}
             return JsonResponse(result)
         json_obj = json.loads(data)
         comment_id = json_obj.get('comment_id')
         comments = Comment.objects.filter(id=comment_id)
         if not comments:
-            return JsonResponse({'code': 30103, 'error': '无法删除该评论'})
+            return JsonResponse({'code': 20006, 'error': '无法删除该评论'})
         comment = comments[0]
         # 修改评论isActive属性为False
         comment.isActive=False
@@ -376,7 +337,7 @@ class Reply(View):
     def post(self,request):
         data = request.body
         if not data:
-            result = {'code': '30104', 'error': '请填写回复信息'}
+            result = {'code': 20007, 'error': '请填写回复信息'}
             return JsonResponse(result)
         json_obj = json.loads(data)
         content = json_obj.get('content')
@@ -398,13 +359,13 @@ class Reply(View):
     def delete(self, request):
         data = request.body
         if not data:
-            result = {'code': '30105', 'error': '删除失败'}
+            result = {'code': 20008, 'error': '删除失败'}
             return JsonResponse(result)
         json_obj = json.loads(data)
         reply_id = json_obj.get('reply_id')
         replies = ReplyProduct.objects.filter(id=reply_id)
         if not replies:
-            return JsonResponse({'code': 30106, 'error': '无法删除该回复'})
+            return JsonResponse({'code': 20009, 'error': '无法删除该回复'})
         reply = replies[0]
         reply.isActive = False
         reply.save()
@@ -424,7 +385,7 @@ class LikeP(View):
     def post(self,request):
         data = request.body
         if not data:
-            result = {'code': '30106', 'error': '点赞失败，请重试'}
+            result = {'code': 20010, 'error': '点赞失败，请重试'}
             return JsonResponse(result)
         json_obj = json.loads(data)
         uid = json_obj.get('uid')
@@ -473,7 +434,7 @@ class CollectProducts(View):
     def post(self,request):
         data = request.body
         if not data:
-            result = {'code': '30109', 'error': '收藏失败，请重试'}
+            result = {'code': 20011, 'error': '收藏失败，请重试'}
             return JsonResponse(result)
         json_obj = json.loads(data)
         uid = json_obj.get('uid')
@@ -514,7 +475,7 @@ class PScore(View):
     def post(self,request):
         data = request.body
         if not data:
-            result = {'code': '30110', 'error': '评分失败，请重试'}
+            result = {'code': 20012, 'error': '评分失败，请重试'}
             return JsonResponse(result)
         json_obj = json.loads(data)
         uid = json_obj.get('uid')
@@ -541,7 +502,7 @@ class CollectProductView(View):
         user_obj = UserProfile.objects.filter(id=uid)
         collect_list = Collect.objects.filter(uid=user_obj[0],isActive=True).order_by('-updated_time')
         if not collect_list:
-            return JsonResponse({'code':10117,'data':'你还没收藏产品哦'})
+            return JsonResponse({'code':20013,'data':'你还没收藏产品哦'})
         sku_info_list = get_collect_sku(collect_list, sku_info_list)
         result = {'code':200,'data':{
                                     'uid':uid,
@@ -557,7 +518,7 @@ class OthersCollectProductView(View):
         user_obj = UserProfile.objects.filter(username=username)
         collect_list = Collect.objects.filter(uid=user_obj[0],isActive=True).order_by('-updated_time')
         if not collect_list:
-            return JsonResponse({'code':10117,
+            return JsonResponse({'code':20014,
                                  'data':{'uid':user_obj[0].id,
                                         'username':username,
                                         'profile_img':settings.PIC_URL + str(user_obj[0].profile_image_url),
@@ -579,7 +540,7 @@ class SkuSearch(View):
         # 前端必须  用表单提交  且  input  name=q
         data = request.POST.get('q')
         if not data:
-            return JsonResponse({'code':3999,
+            return JsonResponse({'code':20015,
             'error':'Please give me q'})
         form = ModelSearchForm(request.POST,load_all=True)
 
@@ -587,7 +548,7 @@ class SkuSearch(View):
         if form.is_valid():
             results = form.search()
         else:
-            return JsonResponse({'code':3888,
+            return JsonResponse({'code':20016,
             'error':'Please give me q !! '})
 
         #生成分页
@@ -597,7 +558,7 @@ class SkuSearch(View):
             c_page = int(request.POST.get('page',1))
             page = paginator.page(c_page)
         except Exception as e:
-            return JsonResponse({'code':3666,
+            return JsonResponse({'code':20017,
                 'error':'page number is wrong'})
         sku_list = []
         for result in page.object_list:

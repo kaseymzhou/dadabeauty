@@ -139,7 +139,7 @@ class ChangePersonalInfo(View):
         # 接收前端返回来的最新用户信息
         data = request.body
         if not data:
-            result = {'code': '10119', 'error': '请提供完整信息'}
+            result = {'code': 10001, 'error': '请提供完整信息'}
             return JsonResponse(result)
         json_obj = json.loads(data)
         new_username = json_obj.get('username')
@@ -150,7 +150,7 @@ class ChangePersonalInfo(View):
         # 检查用户名是否可用
         old_user = UserProfile.objects.filter(username=new_username)
         if old_user:
-            result = {'code': '10120', 'error': '用户名已存在!'}
+            result = {'code': 10002, 'error': '用户名已存在!'}
             return JsonResponse(result)
         # 修改用户信息
         try:
@@ -163,7 +163,7 @@ class ChangePersonalInfo(View):
             user.birthday = new_birthday
             user.save()
         except Exception as e:
-            result = {'code': '10121', 'error': '用户名已存在!'}
+            result = {'code': 10003, 'error': '用户名已存在!'}
             return JsonResponse(result)
         # 生成、签发token
         # {'code':200, 'username':'xxxx', 'data':{'token':xxxx}}
@@ -180,7 +180,7 @@ class ChangePassword(View):
     def get(self,request):
         data = request.body
         if not data:
-            result = {'code': '10122', 'error': '请提供完整的信息'}
+            result = {'code': 10004, 'error': '请提供完整的信息'}
             return JsonResponse(result)
         json_obj = json.loads(data)
         uid = json_obj.get('uid')
@@ -192,7 +192,7 @@ class ChangePassword(View):
         user = user[0]
         old_password_record = user.password
         if old_password_record != m.hexdigest():
-            return JsonResponse({'code':'10123','data':'您的旧密码有误'})
+            return JsonResponse({'code':10005,'data':'您的旧密码有误'})
         else:
             m.update(new_password.encode())
             user.password = m.hexdigest()
@@ -206,7 +206,7 @@ class Users(View):
     def post(self, request):
         data = request.body
         if not data:
-            result = {'code': '10101', 'error': '请提供完整的注册信息'}
+            result = {'code': 10006, 'error': '请提供完整的注册信息'}
             return JsonResponse(result)
         json_obj = json.loads(data)
         username = json_obj.get('username')
@@ -218,7 +218,7 @@ class Users(View):
         # 检查用户名是否可用
         old_user = UserProfile.objects.filter(username=username)
         if old_user:
-            result = {'code': '10102', 'error': '用户名已存在!'}
+            result = {'code': 10007, 'error': '用户名已存在!'}
             return JsonResponse(result)
         # 生成密码哈希
         m = hashlib.md5()
@@ -229,7 +229,7 @@ class Users(View):
                                               email=email, phone=phone,gender=gender,
                                               birthday=birthday)
         except Exception as e:
-            result = {'code': '10103', 'error': '用户名已存在!'}
+            result = {'code': 10008, 'error': '用户名已存在!'}
             return JsonResponse(result)
         user = UserProfile.objects.filter(username=username)
         user = user[0]
@@ -263,7 +263,7 @@ def send_active_mail(email, code_url):
 # 用户账户激活
 def users_active(request):
     if request.method != 'GET':
-        result = {'code': 10104, 'error': '请使用post方法提交'}
+        result = {'code': 10009, 'error': '请使用post方法提交'}
         return JsonResponse(result)
     code = request.GET.get('code')
     if not code:
@@ -274,19 +274,19 @@ def users_active(request):
         new_code_str = code_str.decode()
         username, rcode = new_code_str.split('_')
     except Exception as e:
-        result = {'code': 10105, 'error': 'Your code is wrong!'}
+        result = {'code': 10010, 'error': 'Your code is wrong!'}
         return JsonResponse(result)
     old_data = r.get('email_active_%s' % (username))
     if not old_data:
-        result = {'code': 10106, 'error': 'Your code is wrong!'}
+        result = {'code': 10011, 'error': 'Your code is wrong!'}
         return JsonResponse(result)
     if code_str != old_data:
-        result = {'code': 10107, 'error':'Your code is wrong!!'}
+        result = {'code': 10012, 'error':'Your code is wrong!!'}
         return JsonResponse(result)
     # 判断完基本信息，开始激活用户
     users = UserProfile.objects.filter(username=username)
     if not users:
-        result = {'code': 10108, 'error': 'Your code is wrong!!'}
+        result = {'code': 10013, 'error': 'Your code is wrong!!'}
         return JsonResponse(result)
     user = users[0]
     user.isActive = True
@@ -375,7 +375,7 @@ class OAuthWeiboView(View):
         except Exception as e:
             print('---weibo register error---')
             print(e)
-            return JsonResponse({'code': '10115', 'error': {'message': 'The username is exitsed'}})
+            return JsonResponse({'code': 10014, 'error': {'message': 'The username is exitsed'}})
         # 签发token
         token = make_token(username)
         result = {'code': 200, 'username': username, 'data': {'token': token.decode()}}
@@ -421,7 +421,7 @@ class InterestedChoiceView(View):
     def post(self,request):
         data = request.body
         if not data:
-            result = {'code': '10109', 'error': '请提供感兴趣的方面'}
+            result = {'code': 10015, 'error': '请提供感兴趣的方面'}
             return JsonResponse(result)
         json_obj = json.loads(data) # {'uid':'01','interests':['1,2,5']}
         intesters_all = json_obj.get('interests') #['1,2,5']
@@ -453,7 +453,7 @@ class PersonDescription(View):
     def post(self,request):
         data = request.body
         if not data:
-            result = {'code': '10141', 'error': '请填写个性签名'}
+            result = {'code': 10016, 'error': '请填写个性签名'}
             return JsonResponse(result)
         json_obj = json.loads(data)
         description = json_obj.get('description')
@@ -469,12 +469,12 @@ class PersonDescription(View):
 class AddFan(View):
     @logging_check
     def get(self, request):
-        return JsonResponse({'code':10113,'error':'请使用post方式'})
+        return JsonResponse({'code':10017,'error':'请使用post方式'})
     @logging_check
     def post(self,request):
         data = request.body #{'followed':name,'fans_id':02}
         if not data:
-            result = {'code': '10101', 'error': '关注失败'}
+            result = {'code': 10018, 'error': '关注失败'}
             return JsonResponse(result)
         else:
             json_obj = json.loads(data)
@@ -529,7 +529,7 @@ class Birthday_email(View):
 def get_fans_info(user_object):
     fans = FollowUser.objects.filter(followed_id=user_object[0], isActive=True).order_by('-updated_time')
     if not fans:
-        return JsonResponse({'code': 10116, 'data': 'no fans'})
+        return JsonResponse({'code': 10019, 'data': 'no fans'})
     fans_info = []
     for item in fans:
         per_fans_info = {}
@@ -543,7 +543,7 @@ def get_fans_info(user_object):
 def get_follow_info(follow_object):
     follows = FollowUser.objects.filter(fans_id=follow_object[0], isActive=True).order_by('-updated_time')
     if not follows:
-        return JsonResponse({'code': 10115, 'data': '你还没有关注过别人哦'})
+        return JsonResponse({'code': 10020, 'data': '你还没有关注过别人哦'})
     follow_info = []
     for item in follows:
         per_follow_info = {}
