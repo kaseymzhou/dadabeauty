@@ -607,7 +607,7 @@ def get_blog_index(blog_list):
     return blog_send_list
 
 # def 取具体内容
-def get_blog_index_detail(item_obj,list):
+def get_blog_index_detail(item_obj,detail_list):
     per_blog_info = {}
     per_blog_info['title'] = item_obj.title
     per_blog_info['content'] = item_obj.content[:50] + '……'
@@ -621,8 +621,8 @@ def get_blog_index_detail(item_obj,list):
         blog_id = item_obj.id
         # 取redis
         per_blog_info['like_count'], per_blog_info['forward_count'], per_blog_info['collect_count'], per_blog_info['comment_count'] = get_redis_num(blog_id, per_blog_info)
-        list.append(per_blog_info)
-    return list
+        detail_list.append(per_blog_info)
+    return detail_list
 
 # def 取博客收藏 转发 评论 点赞数
 def get_redis_num(blog_id,per_blog):
