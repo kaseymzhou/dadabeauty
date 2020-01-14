@@ -27,3 +27,7 @@ class UserProfileManager(admin.ModelAdmin):
     list_display_links = ['id']
 # 注册管理类
 admin.site.register(models.UserProfile,UserProfileManager)
+
+class WeiboUserManaget(admin.ModelAdmin):
+    list_display = ['id','uid','wuid']
+admin.site.register(models.WeiboUser,WeiboUserManaget)

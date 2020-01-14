@@ -548,38 +548,39 @@ def get_detail_blog(blog):
 # def 取转发博客
 def get_forward_blog(forward_list, blog_send_list):
     for item in forward_list:
-        forward_blog = {}
-        forward_blog['code'] = 202
-        forward_blog['fid'] = item.id
-        forward_blog['fcontent'] = item.content
-        forward_blog['fusername'] = item.uid.username
-        forward_blog['profile_img'] = settings.PIC_URL+str(item.uid.profile_image_url)
-        forward_blog['create_time'] =  timezone.localtime(item.create_time).strftime("%b %d %Y %H:%M:%S")
-        forward_blog['order_create_time'] = item.create_time
-        blog_object = item.b_id
-        forward_blog['id'] = blog_object.id
-        forward_blog['title'] = blog_object.title
-        forward_blog['content'] = blog_object.content
-        forward_blog['username'] = blog_object.uid.username
-        forward_blog['ocreate_time'] = blog_object.create_time
-        forward_blog['oprofile_img'] = settings.PIC_URL + str(blog_object.uid.profile_image_url)
-        tags_object_list = Tag_blog.objects.filter(blog_id_fk=blog_object)
-        total_tags_list = []
-        # 取tag
-        for tag_obj in tags_object_list:
-            per_tag_name = tag_obj.tag_id_fk.tag_name
-            total_tags_list.append(per_tag_name)
-        forward_blog['tags'] = total_tags_list
-        blog_id = blog_object.id
-        # 取redis
-        forward_blog['like_count'], forward_blog['forward_count'], forward_blog['collect_count'], forward_blog['comment_count'] = get_redis_num(blog_id,forward_blog)
-        # 取图片
-        images = Image.objects.filter(b_id=blog_object)
-        image_list = []
-        for item in images:
-            image_list.append(settings.PIC_URL + str(item.image))
-        forward_blog['img'] = image_list
-        blog_send_list.append(forward_blog)
+        if item.b_id.is_active==True:
+            forward_blog = {}
+            forward_blog['code'] = 202
+            forward_blog['fid'] = item.id
+            forward_blog['fcontent'] = item.content
+            forward_blog['fusername'] = item.uid.username
+            forward_blog['profile_img'] = settings.PIC_URL+str(item.uid.profile_image_url)
+            forward_blog['create_time'] =  timezone.localtime(item.create_time).strftime("%b %d %Y %H:%M:%S")
+            forward_blog['order_create_time'] = item.create_time
+            blog_object = item.b_id
+            forward_blog['id'] = blog_object.id
+            forward_blog['title'] = blog_object.title
+            forward_blog['content'] = blog_object.content
+            forward_blog['username'] = blog_object.uid.username
+            forward_blog['ocreate_time'] = blog_object.create_time
+            forward_blog['oprofile_img'] = settings.PIC_URL + str(blog_object.uid.profile_image_url)
+            tags_object_list = Tag_blog.objects.filter(blog_id_fk=blog_object)
+            total_tags_list = []
+            # 取tag
+            for tag_obj in tags_object_list:
+                per_tag_name = tag_obj.tag_id_fk.tag_name
+                total_tags_list.append(per_tag_name)
+            forward_blog['tags'] = total_tags_list
+            blog_id = blog_object.id
+            # 取redis
+            forward_blog['like_count'], forward_blog['forward_count'], forward_blog['collect_count'], forward_blog['comment_count'] = get_redis_num(blog_id,forward_blog)
+            # 取图片
+            images = Image.objects.filter(b_id=blog_object)
+            image_list = []
+            for item in images:
+                image_list.append(settings.PIC_URL + str(item.image))
+            forward_blog['img'] = image_list
+            blog_send_list.append(forward_blog)
 
 # def 将原创博客与转发博客进行时间排序
 def order_by_creatime(blog_send_list):
